@@ -134,12 +134,7 @@ type
     /// </summary>
     /// <param name="ASubscriber">
     ///   The subscriber object to register, which should have methods with
-    ///   Subscribe attribute specified.
-    /// </param>
-    /// <param name="AInstanceContext">
-    ///   An instance-specific context. If a subscriber method has its
-    ///   SubscriberAttribute.ContextOption set to UseInstanceContext, then the
-    ///   instance context specified here will be applied to that method.
+    ///   Subscribe attributes.
     /// </param>
     /// <exception cref="EInvalidSubscriberMethod">
     ///   Throws whenever a subscriber method of the subscriber object has
@@ -149,46 +144,24 @@ type
     ///   Throws when the subscriber object does not have any methods with
     ///   Subscribe attribute defined.
     /// </exception>
-    /// <exception cref="ESubscriberMethodAlreadyRegistered">
-    ///   Throws when the subscriber object has already been registered.
-    /// </exception>
-    /// <exception cref="EUnspecifiedInstanceContext">
-    ///   Throws when the subscriber object has methods with UseInstanceContext
-    ///   enabled, but AInstanceContext is empty.
-    /// </exception>
-    /// <seealso cref="TContextOption" />
-    procedure RegisterSubscriberForEvents(ASubscriber: TObject; const AInstanceContext: string = '');
+    procedure RegisterSubscriberForEvents(ASubscriber: TObject);
 
     /// <summary>
     ///   Registers a subscriber for interface-typed events.
     /// </summary>
     /// <param name="ASubscriber">
     ///   The subscriber object to register, which should have methods with
-    ///   Subscribe attribute specified.
-    /// </param>
-    /// <param name="AInstanceContext">
-    ///   An instance-specific context. If a subscriber method has its
-    ///   SubscriberAttribute.ContextOption set to UseInstanceContext, then the
-    ///   instance context specified here will be applied to that method.
+    ///   Subscribe attributes.
     /// </param>
     /// <exception cref="EInvalidSubscriberMethod">
-    ///   Throws when a subscriber method of the subscriber object has invalid
-    ///   number of arguments or invalid argument type.
-    /// </exception>
-    /// <exception cref="ESubscriberMethodAlreadyRegistered">
-    ///   Throws when the subscriber object has already been registered.
-    /// </exception>
-    /// <exception cref="EUnspecifiedInstanceContext">
-    ///   Throws when the subscriber object has methods with UseInstanceContext
-    ///   enabled, but AInstanceContext is empty.
+    ///   Throws whenever a subscriber method of the subscriber object has
+    ///   invalid number of arguments or invalid argument type.
     /// </exception>
     /// <remarks>
-    ///   EObjectHasNoSubscriberMethods will not be thrown when the subscriber
-    ///   object has no subscriber methods defined. To have the exception
-    ///   enabled, use <br />RegisterSubscriberForEvents method instead. <br />
+    ///   There won't be any exception thrown if the subscriber object has no
+    ///   subscriber methods defined.
     /// </remarks>
-    /// <seealso cref="TContextOption" />
-    procedure SilentRegisterSubscriberForEvents(ASubscriber: TObject; const AInstanceContext: string = '');
+    procedure SilentRegisterSubscriberForEvents(ASubscriber: TObject);
 
     /// <summary>
     ///   Unregisters a subscriber from receiving interface-typed events.
@@ -280,36 +253,27 @@ type
     Background
   );
 
-  /// <summary>
-  ///   Defines context option for the subscriber method.
-  /// </summary>
-  TContextOption = (
-    /// <summary>
-    ///   The subscriber method will use the instance context, which will be
-    ///   specified when registering the subscriber object at run-time. <br />
-    /// </summary>
-    UseInstanceContext,
-    /// <summary>
-    ///   The subscriber method will use the context as specified with the
-    ///   subscriber method in-place as part of its compile-time attribute.
-    /// </summary>
-    UseAttributeContext
-  );
-
 type
   TSubscriberMethodAttribute = class abstract (TCustomAttribute)
   strict private
     FContext: string;
-    FContextOption: TContextOption;
     FThreadMode: TThreadMode;
   strict protected
     function Get_ArgTypeKind: TTypeKind; virtual; abstract;
-    constructor Create(AThreadMode: TThreadMode; AContextOption: TContextOption; const AContext: string);
+
+    /// <param name="AThreadMode">
+    ///   Thread mode of the subscriber method.
+    /// </param>
+    /// <param name="AContext">
+    ///   Context of event.
+    /// </param>
+    /// <seealso cref="TEventBusThreadMode" />
+    constructor Create(AThreadMode: TThreadMode; const AContext: string);
   public
     /// <summary>
-    ///   Required argment type of the subscriber method.
+    ///   Thread mode of the subscriber method.
     /// </summary>
-    property ArgTypeKind: TTypeKind read Get_ArgTypeKind;
+    property ThreadMode: TThreadMode read FThreadMode;
 
     /// <summary>
     ///   Context of the subscriber method.
@@ -317,14 +281,9 @@ type
     property Context: string read FContext;
 
     /// <summary>
-    ///   Context option of the subscriber method.
+    ///   Required argment type of the subscriber method.
     /// </summary>
-    property ContextOption: TContextOption read FContextOption;
-
-    /// <summary>
-    ///   Thread mode of the subscriber method.
-    /// </summary>
-    property ThreadMode: TThreadMode read FThreadMode;
+    property ArgTypeKind: TTypeKind read Get_ArgTypeKind;
   end;
 
   /// <summary>
@@ -335,8 +294,7 @@ type
   strict protected
     function Get_ArgTypeKind: TTypeKind; override;
   public
-    constructor Create(AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: string = ''); overload;
-    constructor Create(AContextOption: TContextOption; AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: string = ''); overload;
+    constructor Create(AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: string = '');
   end;
 
   /// <summary>
@@ -361,13 +319,6 @@ type
     ///   Name of the channel.
     /// </summary>
     property Channel: string read Get_Channel;
-  end;
-
-  /// <summary>
-  ///   Throws whenever a subscriber method has UseInstanceContext enabled but
-  ///   the supplied instance context is an empty string.
-  /// </summary>
-  EUnspecifiedInstanceContext = class(Exception)
   end;
 
   /// <summary>
@@ -461,12 +412,7 @@ end;
 
 constructor SubscribeAttribute.Create(AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: string = '');
 begin
-  inherited Create(AThreadMode, TContextOption.UseAttributeContext, AContext);
-end;
-
-constructor SubscribeAttribute.Create(AContextOption: TContextOption; AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: string = '');
-begin
-  inherited Create(AThreadMode, AContextOption, AContext);
+  inherited Create(AThreadMode, AContext);
 end;
 
 function SubscribeAttribute.Get_ArgTypeKind: TTypeKind;
@@ -476,7 +422,7 @@ end;
 
 constructor ChannelAttribute.Create(const AChannel: string; AThreadMode: TThreadMode = TThreadMode.Posting);
 begin
-  inherited Create(AThreadMode, TContextOption.UseAttributeContext, AChannel);
+  inherited Create(AThreadMode, AChannel);
 end;
 
 function ChannelAttribute.Get_ArgTypeKind: TTypeKind;
@@ -489,11 +435,10 @@ begin
   Result := Context;
 end;
 
-constructor TSubscriberMethodAttribute.Create(AThreadMode: TThreadMode; AContextOption: TContextOption; const AContext: string);
+constructor TSubscriberMethodAttribute.Create(AThreadMode: TThreadMode; const AContext: string);
 begin
   inherited Create;
   FContext := AContext;
-  FContextOption := AContextOption;
   FThreadMode := AThreadMode;
 end;
 

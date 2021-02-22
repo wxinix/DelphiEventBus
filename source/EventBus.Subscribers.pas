@@ -33,7 +33,6 @@ type
   TSubscriberMethod = class sealed(TObject)
   strict private
     FContext: string;
-    FContextOption: TContextOption;
     FEventType: string;
     FMethod: TRttiMethod;
     FPriority: Integer;
@@ -55,7 +54,8 @@ type
     /// <param name="APriority">
     ///   Dispatching priority of the method.
     /// </param>
-    constructor Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode; AContextOption: TContextOption; const AContext: string = ''; APriority: Integer = 1);
+    constructor Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode;
+      const AContext: string = ''; APriority: Integer = 1);
 
     /// <summary>
     ///   Encodes Context string and EventType string to a Category string,
@@ -77,14 +77,6 @@ type
     function Equals(AObject: TObject): Boolean; override;
 
     /// <summary>
-    ///   Set a new context to the method, overriding the existing one.
-    /// </summary>
-    /// <param name="ANewContext">
-    ///   The new context string to set.
-    /// </param>
-    procedure SetNewContext(const ANewContext: string);
-
-    /// <summary>
     ///   Category of the subscriber method. Internally it takes value of "Context:EventType".
     /// </summary>
     property Category: string read Get_Category;
@@ -93,9 +85,6 @@ type
     ///   Context of the subscriber method.
     /// </summary>
     property Context: string read FContext;
-
-    property ContextOption: TContextOption read FContextOption;
-
     /// <summary>
     ///   Event type of the subscriber method. It is actually the fully
     ///   qualified name of the event type.
@@ -196,13 +185,13 @@ implementation
 uses
   System.SysUtils, System.TypInfo, EventBus.Helpers;
 
-constructor TSubscriberMethod.Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode; AContextOption: TContextOption; const AContext: string = ''; APriority: Integer = 1);
+constructor TSubscriberMethod.Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode;
+  const AContext: string = ''; APriority: Integer = 1);
 begin
   FMethod := ARttiMethod;
   FEventType := AEventType;
   FThreadMode := AThreadMode;
   FContext := AContext;
-  FContextOption := AContextOption;
   FPriority := APriority;
 end;
 
@@ -228,11 +217,6 @@ end;
 function TSubscriberMethod.Get_Category: string;
 begin
   Result := EncodeCategory(Context, EventType);
-end;
-
-procedure TSubscriberMethod.SetNewContext(const ANewContext: string);
-begin
-  FContext := ANewContext;
 end;
 
 class function TSubscribersFinder.FindSubscriberMethods<T>(ASubscriberClass: TClass;
@@ -274,7 +258,7 @@ begin
       end;
 
       LEventType := LMethod.GetParameters[0].ParamType.QualifiedName;
-      LSubMethod := TSubscriberMethod.Create(LMethod, LEventType, LAttribute.ThreadMode, LAttribute.ContextOption, LAttribute.Context);
+      LSubMethod := TSubscriberMethod.Create(LMethod, LEventType, LAttribute.ThreadMode, LAttribute.Context);
 
       {$IF CompilerVersion >= 28.0}
       Result := Result + [LSubMethod];
