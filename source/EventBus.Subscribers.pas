@@ -54,8 +54,7 @@ type
     /// <param name="APriority">
     ///   Dispatching priority of the method.
     /// </param>
-    constructor Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode;
-      const AContext: string = ''; APriority: Integer = 1);
+    constructor Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode; const AContext: string = ''; APriority: Integer = 1);
 
     /// <summary>
     ///   Encodes Context string and EventType string to a Category string,
@@ -176,8 +175,7 @@ type
     ///   Subscribe or Channel attribute specified, and ARaiseExcIfEmpty is
     ///   True.
     /// </exception>
-    class function FindSubscriberMethods<T: TSubscriberMethodAttribute>(ASubscriberClass: TClass;
-      ARaiseExcIfEmpty: Boolean = False): TArray<TSubscriberMethod>;
+    class function FindSubscriberMethods<T: TSubscriberMethodAttribute>(ASubscriberClass: TClass; ARaiseExcIfEmpty: Boolean = False): TArray<TSubscriberMethod>;
   end;
 
 implementation
@@ -185,8 +183,7 @@ implementation
 uses
   System.SysUtils, System.TypInfo, EventBus.Helpers;
 
-constructor TSubscriberMethod.Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode;
-  const AContext: string = ''; APriority: Integer = 1);
+constructor TSubscriberMethod.Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode; const AContext: string = ''; APriority: Integer = 1);
 begin
   FMethod := ARttiMethod;
   FEventType := AEventType;
@@ -201,8 +198,6 @@ begin
 end;
 
 function TSubscriberMethod.Equals(AObject: TObject): Boolean;
-var
-  LOtherSubscriberMethod: TSubscriberMethod;
 begin
   if not (AObject is TSubscriberMethod) then
     Exit(False);
@@ -210,7 +205,7 @@ begin
   if (inherited Equals(AObject)) then
     Exit(True);
 
-  LOtherSubscriberMethod := TSubscriberMethod(AObject);
+  var LOtherSubscriberMethod := TSubscriberMethod(AObject);
   Result := (LOtherSubscriberMethod.Method.Tostring = Method.Tostring) and (LOtherSubscriberMethod.EventType = EventType);
 end;
 
@@ -219,29 +214,18 @@ begin
   Result := EncodeCategory(Context, EventType);
 end;
 
-class function TSubscribersFinder.FindSubscriberMethods<T>(ASubscriberClass: TClass;
-  ARaiseExcIfEmpty: Boolean = False): TArray<TSubscriberMethod>;
-var
-  LEventType: string;
-  LMethod: TRttiMethod;
-  LParamsLength: Integer;
-  LRttiMethods: TArray<System.Rtti.TRttiMethod>;
-  LRttiType: TRttiType;
-  LSubMethod: TSubscriberMethod;
-  LAttribute: T;
+class function TSubscribersFinder.FindSubscriberMethods<T>(ASubscriberClass: TClass; ARaiseExcIfEmpty: Boolean = False): TArray<TSubscriberMethod>;
 begin
-  {$IF CompilerVersion >= 28.0}
   Result := [];
-  {$ELSE}
-  SetLength(Result, 0);
-  {$ENDIF}
 
-  LRttiType := TRttiUtils.Context.GetType(ASubscriberClass);
-  LRttiMethods := LRttiType.GetMethods;
+  var LRttiType := Context.GetType(ASubscriberClass);
+  var LRttiMethods := LRttiType.GetMethods;
 
-  for LMethod in LRttiMethods do begin
-    if TRttiUtils.HasAttribute<T>(LMethod, LAttribute) then begin
-      LParamsLength := Length(LMethod.GetParameters);
+  for var LMethod in LRttiMethods do begin
+    var LAttribute: T;
+
+    if LMethod.TryGetAttribute<T>(LAttribute) then begin
+      var LParamsLength := Length(LMethod.GetParameters);
 
       if (LParamsLength <> 1) or (LMethod.GetParameters[0].ParamType.TypeKind <> LAttribute.ArgTypeKind) then begin
         raise EInvalidSubscriberMethod.CreateFmt(
@@ -257,15 +241,10 @@ begin
           ]);
       end;
 
-      LEventType := LMethod.GetParameters[0].ParamType.QualifiedName;
-      LSubMethod := TSubscriberMethod.Create(LMethod, LEventType, LAttribute.ThreadMode, LAttribute.Context);
+      var LEventType := LMethod.GetParameters[0].ParamType.QualifiedName;
+      var LSubMethod := TSubscriberMethod.Create(LMethod, LEventType, LAttribute.ThreadMode, LAttribute.Context);
 
-      {$IF CompilerVersion >= 28.0}
       Result := Result + [LSubMethod];
-      {$ELSE}
-      SetLength(Result, Length(Result) + 1);
-      Result[High(Result)] := LSubMethod;
-      {$ENDIF}
     end;
   end;
 
