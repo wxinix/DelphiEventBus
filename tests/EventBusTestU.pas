@@ -1,5 +1,6 @@
 unit EventBusTestU;
-
+
+
 interface
 
 uses
@@ -20,9 +21,6 @@ type
     procedure TestRegisterUnregisterMultipleSubscriberEvents;
     [Test]
     procedure TestDuplicateRegister;
-    [Test]
-    procedure TestRegisterSubscriberObjectWithInstanceContext;
-
     [Test]
     procedure TestRegisterUnregisterChannels;
     [Test]
@@ -499,7 +497,8 @@ begin
     GlobalEventBus.RegisterSubscriberForEvents(LSubscriber);
 
     Assert.WillRaise(
-      procedure begin
+      procedure
+      begin
         GlobalEventBus.RegisterSubscriberForEvents(LSubscriber);
       end
       ,
@@ -518,7 +517,8 @@ begin
   LSubscriber := TEmptySubscriber.Create;
 
   Assert.WillRaise(
-    procedure begin
+    procedure
+    begin
       GlobalEventBus.RegisterSubscriberForEvents(LSubscriber);
     end
     ,
@@ -527,7 +527,8 @@ begin
     'Empty subscriber methods for Events');
 
   Assert.WillRaise(
-    procedure begin
+    procedure
+    begin
       GlobalEventBus.RegisterSubscriberForChannels(LSubscriber);
     end
     ,
@@ -545,7 +546,8 @@ begin
   LSubscriber := TInvalidArgNumSubscriber.Create;
 
   Assert.WillRaise(
-    procedure begin
+    procedure
+    begin
       GlobalEventBus.RegisterSubscriberForEvents(LSubscriber);
     end
     ,
@@ -554,7 +556,8 @@ begin
     'Invalid subscriber method argument number');
 
   Assert.WillRaise(
-    procedure begin
+    procedure
+    begin
       GlobalEventBus.RegisterSubscriberForChannels(LSubscriber);
     end
     ,
@@ -572,7 +575,8 @@ begin
   LSubscriber := TInvalidArgTypeSubscriber.Create;
 
   Assert.WillRaise(
-    procedure begin
+    procedure
+    begin
       GlobalEventBus.RegisterSubscriberForEvents(LSubscriber);
     end
     ,
@@ -581,7 +585,8 @@ begin
     'Invalid subscriber method argument type');
 
   Assert.WillRaise(
-    procedure begin
+    procedure
+    begin
       GlobalEventBus.RegisterSubscriberForChannels(LSubscriber);
     end
     ,
@@ -592,34 +597,8 @@ begin
   LSubscriber.Free;
 end;
 
-
-procedure TEventBusTest.TestRegisterSubscriberObjectWithInstanceContext;
-var
-  LSubscriber: TSubscriberWithInstanceContext;
-  LEvent: IEventBusEvent;
-  LMsg, LInstanceContext: string;
-begin
-  LSubscriber := TSubscriberWithInstanceContext.Create;
-  Assert.IsTrue(True);
-  try
-    // Test for an explicit instance context
-    LInstanceContext := 'INSTANCE_CTX';
-    GlobalEventBus.RegisterSubscriberForEvents(LSubscriber, LInstanceContext);
-    LEvent := TEventBusEvent.Create;
-    LMsg := 'TestSimplePost with instance context';
-    LEvent.Data := LMsg;
-    GlobalEventBus.Post(LEvent, LInstanceContext);
-    Assert.IsTrue(GlobalEventBus.IsRegisteredForEvents(LSubscriber));
-    Assert.AreEqual(LMsg, LSubscriber.LastEvent.Data);
-    GlobalEventBus.UnRegisterForEvents(LSubscriber);
-  finally
-    LSubscriber.Free;
-  end;
-end;
-
-
 initialization
   TDUnitX.RegisterTestFixture(TEventBusTest);
 
 end.
-
+

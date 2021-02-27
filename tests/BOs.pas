@@ -111,11 +111,6 @@ type
     procedure OnSimpleBackgroundChannel(AMsg: string);
   end;
 
-  TSubscriberWithInstanceContext = class(TBaseSubscriber)
-    [Subscribe(UseInstanceContext)]
-    procedure OnSimpleEventWithInstanceContext(AEvent: IEventBusEvent);
-  end;
-
    TSubscriberCopy = class(TBaseSubscriber)
     [Subscribe]
     procedure OnSimpleEvent(AEvent: IEventBusEvent);
@@ -393,13 +388,6 @@ end;
 procedure TInvalidArgTypeSubscriber.OnEvent(AEvent: Integer);
 begin
   // No-Op
-end;
-
-procedure TSubscriberWithInstanceContext.OnSimpleEventWithInstanceContext(AEvent: IEventBusEvent);
-begin
-  LastEvent := AEvent;
-  LastEventThreadID := TThread.CurrentThread.ThreadID;
-  Event.SetEvent;
 end;
 
 
