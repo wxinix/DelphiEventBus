@@ -66,6 +66,7 @@ type
     procedure InvokeSubscriber(ASubscription: TSubscription; const Args: array of TValue);
     function IsRegistered<T: TSubscriberMethodAttribute>(ASubscriber: TObject): Boolean;
     procedure RegisterSubscriber<T: TSubscriberMethodAttribute>(ASubscriber: TObject; ARaiseExcIfEmpty: Boolean);
+    function RemoveSubscription<T: TSubscriberMethodAttribute>(ASubscriber: TObject; const ACategory: string): TSubscription;
     procedure Subscribe<T: TSubscriberMethodAttribute>(ASubscriber: TObject; ASubscriberMethod: TSubscriberMethod);
     procedure UnregisterSubscriber<T: TSubscriberMethodAttribute>(ASubscriber: TObject);
     procedure Unsubscribe<T: TSubscriberMethodAttribute>(ASubscriber: TObject; const AMethodCategory: TMethodCategory);
@@ -81,6 +82,7 @@ type
     function IsRegisteredForEvents(ASubscriber: TObject): Boolean;
     procedure Post(const AChannel: string; const AMessage: string); overload;
     procedure Post(const AEvent: IInterface; const AContext: string = ''); overload;
+    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext: string; const ANewContext: string);
     procedure RegisterSubscriberForChannels(ASubscriber: TObject);
     procedure SilentRegisterSubscriberForChannels(ASubscriber: TObject);
     procedure RegisterSubscriberForEvents(ASubscriber: TObject);
@@ -272,7 +274,37 @@ begin
     Async:
       TTask.Run(LProc);
   else
-    raise Exception.Create('Unknown thread mode');
+    raise EUnknownThreadMode.CreateFmt('Unknown thread mode: %s.', [Ord(ASubscription.SubscriberMethod.ThreadMode)]);
+  end;
+end;
+
+procedure TEventBus.RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext: string; const ANewContext: string);
+const
+  sSubscriberHasNRE = 'Subscruber has null reference.';
+  sNoMatchedSubscription = 'There is no existing subscription that matches the event type [%s] and old context [%s].';
+begin
+  FMrewSync.BeginWrite;
+
+  try
+    if not Assigned(ASubscriber) then
+      raise EArgumentException.Create(sSubscriberHasNRE);
+
+    var LEventName := TInterfaceHelper.GetQualifiedName(AEvent);
+    var LMethodCategory := TSubscriberMethod.EncodeCategory(AOldContext, LEventName);
+    var LRemovedSubscription := RemoveSubscription<SubscribeAttribute>(ASubscriber, LMethodCategory);
+
+    if LRemovedSubscription = nil then
+      raise EArgumentException.CreateFmt(sNoMatchedSubscription, [LEventName, AOldContext]);
+
+    try
+      var LOldSubMethod := LRemovedSubscription.SubscriberMethod;
+      var LNewSubMethod := TSubscriberMethod.Create(LOldSubMethod.Method, LOldSubMethod.EventType, LOldSubMethod.ThreadMode, ANewContext, LOldSubMethod.Priority);
+      Subscribe<SubscribeAttribute>(ASubscriber, LNewSubMethod);
+    finally
+      LRemovedSubscription.Free;
+    end;
+  finally
+    FMrewSync.EndWrite;
   end;
 end;
 
@@ -299,6 +331,33 @@ end;
 procedure TEventBus.RegisterSubscriberForEvents(ASubscriber: TObject);
 begin
   RegisterSubscriber<SubscribeAttribute>(ASubscriber, True);
+end;
+
+function TEventBus.RemoveSubscription<T>(ASubscriber: TObject; const ACategory: string): TSubscription;
+begin
+  Result := nil;
+
+  var LAttrName := T.ClassName;
+  var LCategoryToSubscriptionsMap: TMethodCategoryToSubscriptionsMap;
+
+  if (not FCategoryToSubscriptionsByAttrName.TryGetValue(LAttrName, LCategoryToSubscriptionsMap)) then
+    Exit;
+
+  var LSubscriptions: TSubscriptions;
+  if (not LCategoryToSubscriptionsMap.TryGetValue(ACategory, LSubscriptions)) then
+    Exit;
+
+  for var LSubscription in LSubscriptions do begin
+    if LSubscription.Subscriber = ASubscriber then begin
+      Result := LSubscriptions.Extract(LSubscription);
+      Break;
+    end
+  end;
+
+  if Assigned(Result) then begin
+    Unsubscribe<T>(ASubscriber, ACategory);
+    Result.Active := False;
+  end
 end;
 
 procedure TEventBus.SilentRegisterSubscriberForChannels(ASubscriber: TObject);

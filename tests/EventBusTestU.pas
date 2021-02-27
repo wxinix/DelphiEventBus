@@ -55,7 +55,11 @@ type
     [Test]
     procedure TestPostContextOnMainThread;
     [Test]
-    procedure TestPostContextKOOnMainThread;
+    procedure TestPostInvalidContextOnMainThread;
+    [Test]
+    procedure TestRegisterNewContext;
+    [Test]
+    procedure TestRegisterNewContextWithInvalidOldContext;
     [Test]
     procedure TestBackgroundPost;
     [Test]
@@ -354,7 +358,7 @@ begin
   Assert.AreEqual(MainThreadID, ChannelSubscriber.LastEventThreadID);
 end;
 
-procedure TEventBusTest.TestPostContextKOOnMainThread;
+procedure TEventBusTest.TestPostInvalidContextOnMainThread;
 var
   LEvent: IMainEvent;
   LMsg: string;
@@ -595,6 +599,45 @@ begin
     'Invalid subscriber method argument type');
 
   LSubscriber.Free;
+end;
+
+procedure TEventBusTest.TestRegisterNewContext;
+var
+  LEvent: IMainEvent;
+  LMsg: string;
+begin
+  GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
+  LEvent := TMainEvent.Create;
+  LMsg := 'TestPostOnMainThread';
+  LEvent.Data := LMsg;
+  GlobalEventBus.RegisterNewContext(Subscriber, LEvent, 'TestCtx', 'MyNewContext');
+
+  GlobalEventBus.Post(LEvent, 'TestCtx');
+  Assert.IsNull(Subscriber.LastEvent);
+
+  GlobalEventBus.Post(LEvent, 'MyNewContext');
+  Assert.AreEqual(LMsg, Subscriber.LastEvent.Data);
+  Assert.AreEqual(MainThreadID, Subscriber.LastEventThreadID);
+end;
+
+procedure TEventBusTest.TestRegisterNewContextWithInvalidOldContext;
+var
+  LEvent: IMainEvent;
+  LMsg: string;
+begin
+  GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
+  LEvent := TMainEvent.Create;
+  LMsg := 'TestPostOnMainThread';
+  LEvent.Data := LMsg;
+
+  Assert.WillRaise(
+    procedure
+    begin
+      GlobalEventBus.RegisterNewContext(Subscriber, LEvent, 'FooFooCtx', 'MyNewContext');
+    end
+    ,
+    EArgumentException
+  );
 end;
 
 initialization
