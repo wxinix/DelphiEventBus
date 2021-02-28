@@ -293,7 +293,8 @@ var
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
 
-  for I := 1 to 10 do begin
+  for I := 1 to 10 do
+  begin
     LEvent := TBackgroundEvent.Create;
     LMsg := 'TestBackgroundPost';
     LEvent.Data := LMsg;
@@ -312,7 +313,8 @@ var
 begin
   GlobalEventBus.RegisterSubscriberForChannels(ChannelSubscriber);
 
-  for I := 1 to 10 do begin
+  for I := 1 to 10 do
+  begin
     LMsg := Format('TestBackgroundPost%d',[I]);
     GlobalEventBus.Post('test_channel_bkg', LMsg);
   end;

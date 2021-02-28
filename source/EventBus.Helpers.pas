@@ -84,7 +84,7 @@ type
   end;
 
   TListStringUtils = class
-    class function ToArray(const values : TList<string>) : TArray<string>;
+    class function ToArray(const AValues: TList<string>): TArray<string>;
   end;
 
   ///	<summary>
@@ -730,8 +730,10 @@ begin
   Result := -1;
   AAttribute := nil;
 
-  for var I := AStartIndex to Length(AAttributes) -1 do  begin
-    if AAttributes[I].ClassType = AAttributeClass then begin
+  for var I := AStartIndex to Length(AAttributes) -1 do
+  begin
+    if AAttributes[I].ClassType = AAttributeClass then
+    begin
       AAttribute := AAttributes[I];
       Exit(I);
     end;
@@ -743,8 +745,10 @@ begin
   SetLength(Result, 0);
 
   var I := 0;
-  for var LAttribute in AAttributes do begin
-    if LAttribute.ClassType = AAttributeClass then begin
+  for var LAttribute in AAttributes do
+  begin
+    if LAttribute.ClassType = AAttributeClass then
+    begin
       SetLength(Result, I + 1);
       Result[I] := LAttribute;
       Inc(I);
@@ -752,18 +756,22 @@ begin
   end;
 end;
 
+// #13Hello#10World  will be encoded as a string "#13'Hello'#10'World'", where whitespace appears as a string.
 class function TStrUtils.EncodeWhitespace(const AStr: string): string;
 const
   sDelimiter: array[Boolean] of string = (#39, ''); // #39 is single quote.
 begin
   Result := '';
-  // #13Hello#10World  will be encoded as a string "#13'Hello'#10'World'", where whitespace appears as a string.
   var LIsLastWhitespace := True;
-  for var I := 1 to Length(AStr) do begin
-    if AStr[I] < #32 then begin
+
+  for var I := 1 to Length(AStr) do
+  begin
+    if AStr[I] < #32 then
+    begin
       Result := Result + sDelimiter[LIsLastWhitespace] + '#' + IntToStr(Ord(AStr[I]));
       LIsLastWhitespace := True;
-    end else begin
+    end else
+    begin
       Result := Result + sDelimiter[not LIsLastWhitespace] + AStr[I];
       LIsLastWhitespace := False;
     end;
@@ -776,7 +784,8 @@ class function TStrUtils.Join(const AValues: TArray<string>; const ADelimiter: s
 begin
   Result := '';
 
-  for var str in AValues do begin
+  for var str in AValues do
+  begin
     if Result <> '' then
       Result := Result + ADelimiter;
 
@@ -788,7 +797,8 @@ class function TStrUtils.PadString(const AStr: string; const ATotalLength: Integ
 begin
   Result := AStr;
 
-  while Length(Result) < ATotalLength do begin
+  while Length(Result) < ATotalLength do
+  begin
     if APadLeft then
       Result := APadChar + Result
     else
@@ -819,7 +829,8 @@ begin
   TValue.MakeWithoutCopy(@LPtr, ATarget, AResult);
   var LElemType := ATarget.TypeData.DynArrElType^;
 
-  for var J := 0 to High(LValues) do begin
+  for var J := 0 to High(LValues) do
+  begin
     var LVal_1 := TValue.FromString(LValues[J]);
     var LVal_2: TValue;
 
@@ -840,7 +851,8 @@ var
 begin
   Result := TryGetRttiType(ATarget, LType) and LType.IsGenericTypeOf('Nullable') and ASource.TryConvert(LType.GetGenericArguments[0].Handle, LValue);
 
-  if Result then begin
+  if Result then
+  begin
     SetLength(LBuffer, LType.TypeSize);
     Move(LValue.GetReferenceToRawData^, LBuffer[0], LType.TypeSize - SizeOf(string));
     PString(@LBuffer[LType.TypeSize - SizeOf(string)])^ := DefaultTrueBoolStr;
@@ -853,7 +865,8 @@ function ConvClass2Class(const ASource: TValue; ATarget: PTypeInfo; out AResult:
 begin
   Result := ASource.TryCast(ATarget, AResult);
 
-  if not Result and IsTypeCovariantTo(ASource.TypeInfo, ATarget) then begin
+  if not Result and IsTypeCovariantTo(ASource.TypeInfo, ATarget) then
+  begin
     AResult := TValue.From(ASource.AsObject, GetTypeData(ATarget).ClassType);
     Result := True;
   end;
@@ -872,12 +885,16 @@ var
 begin
   Result := TryGetRttiType(ATarget, LType) and LType.AsInstance.MetaclassType.InheritsFrom(TStrings);
 
-  if Result then begin
-    if not Enumerations.TryGetValue(ASource.TypeInfo, LStrings) then begin
+  if Result then
+  begin
+    if not Enumerations.TryGetValue(ASource.TypeInfo, LStrings) then
+    begin
       LStrings := TStringList.Create;
 
-      with TRttiEnumerationType(ASource.RttiType) do begin
-        for var I := MinValue to MaxValue do LStrings.Add(GetEnumName(Handle, I));
+      with TRttiEnumerationType(ASource.RttiType) do
+      begin
+        for var I := MinValue to MaxValue do
+          LStrings.Add(GetEnumName(Handle, I));
       end;
 
       Enumerations.Add(ASource.TypeInfo, LStrings);
@@ -891,7 +908,9 @@ end;
 function ConvFloat2Ord(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 begin
   Result := Frac(ASource.AsExtended) = 0;
-  if Result then AResult := TValue.FromOrdinal(ATarget, Trunc(ASource.AsExtended));
+
+  if Result then
+    AResult := TValue.FromOrdinal(ATarget, Trunc(ASource.AsExtended));
 end;
 
 function ConvFloat2Str(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
@@ -916,20 +935,22 @@ begin
 end;
 
 function ConvIntf2Intf(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
-var
-  LType: TRttiType;
-  LMethod: TRttiMethod;
-  LInterface: IInterface;
 begin
   Result := ASource.TryCast(ATarget, AResult);
 
-  if not Result then begin
-    if IsTypeCovariantTo(ASource.TypeInfo, ATarget) then begin
+  if not Result then
+  begin
+    if IsTypeCovariantTo(ASource.TypeInfo, ATarget) then
+    begin
       AResult := TValue.From(ASource.GetReferenceToRawData, ATarget);
       Result := True;
-    end else begin
-      if TryGetRttiType(ASource.TypeInfo, LType) and (GetTypeName(ATarget) = 'IList') and LType.IsGenericTypeOf('IList') and LType.TryGetMethod('AsList', LMethod) then begin
-        LInterface := LMethod.Invoke(ASource, []).AsInterface;
+    end else
+    begin
+      var LType: TRttiType;
+      var LMethod: TRttiMethod;
+      if TryGetRttiType(ASource.TypeInfo, LType) and (GetTypeName(ATarget) = 'IList') and LType.IsGenericTypeOf('IList') and LType.TryGetMethod('AsList', LMethod) then
+      begin
+        var LInterface := LMethod.Invoke(ASource, []).AsInterface;
         AResult := TValue.From(@LInterface, ATarget);
         Result := True;
       end;
@@ -940,12 +961,12 @@ end;
 function ConvNullable2Any(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
   LType: TRttiType;
-  LValue: TValue;
 begin
   Result := TryGetRttiType(ASource.TypeInfo, LType) and LType.IsGenericTypeOf('Nullable');
 
-  if Result then begin
-    LValue := TValue.From(ASource.GetReferenceToRawData, LType.GetGenericArguments[0].Handle);
+  if Result then
+  begin
+    var LValue := TValue.From(ASource.GetReferenceToRawData, LType.GetGenericArguments[0].Handle);
     Result := LValue.TryConvert(ATarget, AResult);
   end
 end;
@@ -972,10 +993,12 @@ end;
 
 function ConvRec2Meth(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 begin
-  if ASource.TypeInfo = TypeInfo(TMethod) then begin
+  if ASource.TypeInfo = TypeInfo(TMethod) then
+  begin
     AResult := TValue.From(ASource.GetReferenceToRawData, ATarget);
     Result := True;
-  end else begin
+  end else
+  begin
     Result := ConvNullable2Any(ASource, ATarget, AResult);
   end;
 end;
@@ -983,19 +1006,22 @@ end;
 function ConvSet2Class(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
   LType: TRttiType;
-  LTypeData: PTypeData;
   LStrings: TStrings;
 begin
   Result := TryGetRttiType(ATarget, LType) and LType.AsInstance.MetaclassType.InheritsFrom(TStrings);
 
-  if Result then begin
-    LTypeData := GetTypeData(ASource.TypeInfo);
+  if Result then
+  begin
+    var LTypeData := GetTypeData(ASource.TypeInfo);
 
-    if not Enumerations.TryGetValue(LTypeData.CompType^, LStrings) then begin
+    if not Enumerations.TryGetValue(LTypeData.CompType^, LStrings) then
+    begin
       LStrings := TStringList.Create;
 
-      with TRttiEnumerationType(TRttiSetType(ASource.RttiType).ElementType) do begin
-        for var I := MinValue to MaxValue do LStrings.Add(GetEnumName(Handle, I));
+      with TRttiEnumerationType(TRttiSetType(ASource.RttiType).ElementType) do
+      begin
+        for var I := MinValue to MaxValue do
+          LStrings.Add(GetEnumName(Handle, I));
       end;
 
       Enumerations.Add(LTypeData.CompType^, LStrings);
@@ -1014,10 +1040,9 @@ end;
 function ConvStr2Float(const ASource: TValue; ATarget: PTypeInfo; out AResult: TValue): Boolean;
 var
   LFormatSettings : TFormatSettings;
-  LValue : string;
 begin
   LFormatSettings.DecimalSeparator := '.';
-  LValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
+  var LValue := StringReplace(ASource.AsString, ',', '.', [rfReplaceAll]);
 
   if ATarget = TypeInfo(TDate) then
     AResult := TValue.From<TDate>(StrToDateDef(LValue, 0))
@@ -1314,9 +1339,12 @@ function FindType(const AName: string; out AType: TRttiType): Boolean;
 begin
   AType := Context.FindType(AName);
 
-  if not Assigned(AType) then begin
-    for var LType in Context.GetTypes do begin
-      if SameText(LType.Name, AName) then begin
+  if not Assigned(AType) then
+  begin
+    for var LType in Context.GetTypes do
+    begin
+      if SameText(LType.Name, AName) then
+      begin
         AType := LType;
         Break;
       end;
@@ -1329,8 +1357,10 @@ function FindType(const AGuid: TGUID; out AType: TRttiType): Boolean;
 begin
   AType := nil;
 
-  for var LType in Context.GetTypes do begin
-    if (LType is TRttiInterfaceType) and IsEqualGUID(TRttiInterfaceType(LType).GUID, AGuid) then begin
+  for var LType in Context.GetTypes do
+  begin
+    if (LType is TRttiInterfaceType) and IsEqualGUID(TRttiInterfaceType(LType).GUID, AGuid) then
+    begin
       AType := LType;
       Break;
     end;
@@ -1370,7 +1400,8 @@ function MergeStrings(AValues: TStringDynArray; const ADelimiter: string): strin
 begin
   Result := '';
 
-  for var I := Low(AValues) to High(AValues) do begin
+  for var I := Low(AValues) to High(AValues) do
+  begin
     if I = 0 then
       Result := AValues[I]
     else
@@ -1417,8 +1448,10 @@ end;
 
 function SameValue(const Left, Right: TValue): Boolean;
 begin
-  if Left.IsNumeric and Right.IsNumeric then begin
-    if Left.IsOrdinal then begin
+  if Left.IsNumeric and Right.IsNumeric then
+  begin
+    if Left.IsOrdinal then
+    begin
       if Right.IsOrdinal then
         Result := Left.AsOrdinal = Right.AsOrdinal
       else if Right.IsSingle then
@@ -1427,7 +1460,8 @@ begin
         Result := System.Math.SameValue(Left.AsOrdinal, Right.AsDouble)
       else
         Result := System.Math.SameValue(Left.AsOrdinal, Right.AsExtended);
-    end else if Left.IsSingle then begin
+    end else if Left.IsSingle then
+    begin
       if Right.IsOrdinal then
         Result := System.Math.SameValue(Left.AsSingle, Right.AsOrdinal)
       else if Right.IsSingle then
@@ -1436,7 +1470,8 @@ begin
         Result := System.Math.SameValue(Left.AsSingle, Right.AsDouble)
       else
         Result := System.Math.SameValue(Left.AsSingle, Right.AsExtended);
-    end else if Left.IsDouble then begin
+    end  else if Left.IsDouble then
+    begin
       if Right.IsOrdinal then
         Result := System.Math.SameValue(Left.AsDouble, Right.AsOrdinal)
       else if Right.IsSingle then
@@ -1445,7 +1480,8 @@ begin
         Result := System.Math.SameValue(Left.AsDouble, Right.AsDouble)
       else
         Result := System.Math.SameValue(Left.AsDouble, Right.AsExtended);
-    end else begin
+    end else
+    begin
       if Right.IsOrdinal then
         Result := System.Math.SameValue(Left.AsExtended, Right.AsOrdinal)
       else if Right.IsSingle then
@@ -1482,8 +1518,10 @@ begin
   SetLength(Result, LLength);
   var LIndex := 0;
 
-  for var I := 0 to High(AArrays) do begin
-    for var K := 0 to High(AArrays[I]) do begin
+  for var I := 0 to High(AArrays) do
+  begin
+    for var K := 0 to High(AArrays[I]) do
+    begin
       Result[LIndex] := AArrays[I][K];
       Inc(LIndex);
     end;
@@ -1624,7 +1662,8 @@ function TObjectHelper.TryGetType(out AType: TRttiType): Boolean;
 begin
   Result := False;
 
-  if Assigned(Self) then begin
+  if Assigned(Self) then
+  begin
     AType := Context.GetType(ClassInfo);
     Result := Assigned(AType);
   end;
@@ -1701,8 +1740,10 @@ function TRttiObjectHelper.FindAttribute<T>: T;
 begin
   Result := Default(T);
 
-  for var LAttr in GetAttributes do begin
-    if LAttr.InheritsFrom(T) then begin
+  for var LAttr in GetAttributes do
+  begin
+    if LAttr.InheritsFrom(T) then
+    begin
       Result := T(LAttr);
       Break;
     end;
@@ -1713,8 +1754,10 @@ function TRttiObjectHelper.FindAttributes<T>: TArray<T>;
 begin
   SetLength(Result, 0);
 
-  for var LAttr in GetAttributes do begin
-    if LAttr.InheritsFrom(T) then begin
+  for var LAttr in GetAttributes do
+  begin
+    if LAttr.InheritsFrom(T) then
+    begin
       SetLength(Result, Length(Result) + 1);
       Result[High(Result)] := T(LAttr);
     end;
@@ -1736,9 +1779,12 @@ class function TRttiParameterHelper.Equals(const Left, Right: TArray<TRttiParame
 begin
   Result := Length(Left) = Length(Right);
 
-  if Result then begin
-    for var I := Low(Left) to High(Left) do begin
-      if Left[I].ParamType <> Right[I].ParamType then begin
+  if Result then
+  begin
+    for var I := Low(Left) to High(Left) do
+    begin
+      if Left[I].ParamType <> Right[I].ParamType then
+      begin
         Result := False;
         Break;
       end;
@@ -1749,10 +1795,12 @@ end;
 function TRttiPropertyHelper.TryGetValue(AInstance: Pointer; out AValue: TValue): Boolean;
 begin
   try
-    if IsReadable then begin
+    if IsReadable then
+    begin
       AValue := GetValue(AInstance);
       Result := True;
-    end else begin
+    end else
+    begin
       Result := False;
     end;
   except
@@ -1762,11 +1810,12 @@ begin
 end;
 
 function TRttiPropertyHelper.TrySetValue(AInstance: Pointer; AValue: TValue): Boolean;
-var
-  LValue: TValue;
 begin
+  var LValue: TValue;
   Result := AValue.TryConvert(PropertyType.Handle, LValue);
-  if Result then SetValue(AInstance, LValue);
+
+  if Result then
+    SetValue(AInstance, LValue);
 end;
 
 function TRttiTypeHelper.GetAsInterface: TRttiInterfaceType;
@@ -1778,16 +1827,21 @@ function TRttiTypeHelper.FindAttributes<T>: TArray<T>;
 begin
   SetLength(Result, 0);
 
-  for var LAttribute in GetAttributes do begin
-    if LAttribute.InheritsFrom(T) then begin
+  for var LAttribute in GetAttributes do
+  begin
+    if LAttribute.InheritsFrom(T) then
+    begin
       SetLength(Result, Length(Result) + 1);
       Result[High(Result)] := T(LAttribute);
     end;
   end;
 
-  if Assigned(BaseType) then begin
-    for var LAttribute in BaseType.FindAttributes<T> do begin
-      if LAttribute.InheritsFrom(T) then begin
+  if Assigned(BaseType) then
+  begin
+    for var LAttribute in BaseType.FindAttributes<T> do
+    begin
+      if LAttribute.InheritsFrom(T) then
+      begin
         SetLength(Result, Length(Result) + 1);
         Result[High(Result)] := T(LAttribute);
       end;
@@ -1808,7 +1862,8 @@ function TRttiTypeHelper.GetGenericTypeDefinition(const AIncludeUnitName: Boolea
 begin
   var LArgs := SplitString(ExtractGenericArguments(Handle), ',');
 
-  for var I := Low(LArgs) to High(LArgs) do begin
+  for var I := Low(LArgs) to High(LArgs) do
+  begin
     // naive implementation - but will work in most cases
     if (I = 0) and (Length(LArgs) = 1) then
       LArgs[I] := 'T'
@@ -1849,9 +1904,11 @@ end;
 function TRttiTypeHelper.GetMethod(ACodeAddress: Pointer): TRttiMethod;
 begin
   Result := nil;
+
   for var LMethod in GetMethods do
   begin
-    if LMethod.CodeAddress = ACodeAddress then begin
+    if LMethod.CodeAddress = ACodeAddress then
+    begin
       Result := LMethod;
       Break;
     end;
@@ -1874,8 +1931,11 @@ end;
 function TRttiTypeHelper.GetStandardConstructor: TRttiMethod;
 begin
   Result := nil;
-  for var LMethod in GetMethods do begin
-    if LMethod.IsConstructor and (LMethod.ParameterCount = 0) then begin
+
+  for var LMethod in GetMethods do
+  begin
+    if LMethod.IsConstructor and (LMethod.ParameterCount = 0) then
+    begin
       Result := LMethod;
       Break;
     end;
@@ -1886,9 +1946,12 @@ function TRttiTypeHelper.InheritsFrom(OtherType: PTypeInfo): Boolean;
 begin
   Result := Handle = OtherType;
 
-  if not Result then begin
+  if not Result then
+  begin
     var LType := BaseType;
-    while Assigned(LType) and not Result do begin
+
+    while Assigned(LType) and not Result do
+    begin
       Result := LType.Handle = OtherType;
       LType := LType.BaseType;
     end;
@@ -1900,13 +1963,16 @@ begin
   Result := False;
   var LRttiType := Context.GetType(AOtherType);
 
-  if Assigned(LRttiType) and IsGenericTypeDefinition then begin
-    if SameText(GetGenericTypeDefinition, LRttiType.GetGenericTypeDefinition) or SameText(GetGenericTypeDefinition(False), LRttiType.GetGenericTypeDefinition(False)) then begin
+  if Assigned(LRttiType) and IsGenericTypeDefinition then
+  begin
+    if SameText(GetGenericTypeDefinition, LRttiType.GetGenericTypeDefinition) or SameText(GetGenericTypeDefinition(False), LRttiType.GetGenericTypeDefinition(False)) then
+    begin
       Result := True;
       var LArgs := GetGenericArguments;
       var LOtherArgs := LRttiType.GetGenericArguments;
 
-      for var I := Low(LArgs) to High(LArgs) do begin
+      for var I := Low(LArgs) to High(LArgs) do
+      begin
         if LArgs[I].IsInterface and LArgs[I].IsInterface and LArgs[I].InheritsFrom(LOtherArgs[I].Handle) then
           Continue;
 
@@ -1916,11 +1982,13 @@ begin
         Result := False;
         Break;
       end;
-    end else begin
+    end else
+    begin
       if Assigned(BaseType) then
         Result := BaseType.IsCovariantTo(AOtherType);
     end;
-  end else begin
+  end else
+  begin
     Result := InheritsFrom(AOtherType);
   end;
 end;
@@ -1933,7 +2001,9 @@ end;
 function TRttiTypeHelper.IsGenericTypeDefinition: Boolean;
 begin
   Result := Length(GetGenericArguments) > 0;
-  if not Result and Assigned(BaseType) then begin
+
+  if not Result and Assigned(BaseType) then
+  begin
     Result := BaseType.IsGenericTypeDefinition;
   end;
 end;
@@ -1948,9 +2018,12 @@ function TRttiTypeHelper.IsInheritedFrom(const AOtherTypeName: string): Boolean;
 begin
   Result := SameText(Name, AOtherTypeName) or (IsPublicType and SameText(QualifiedName, AOtherTypeName));
 
-  if not Result then begin
+  if not Result then
+  begin
     var LType := BaseType;
-    while Assigned(LType) and not Result do begin
+
+    while Assigned(LType) and not Result do
+    begin
       Result := SameText(LType.Name, AOtherTypeName) or (LType.IsPublicType and SameText(LType.QualifiedName, AOtherTypeName));
       LType := LType.BaseType;
     end;
@@ -1961,9 +2034,12 @@ function TRttiTypeHelper.IsInheritedFrom(AOtherType: TRttiType): Boolean;
 begin
   Result := Self.Handle = AOtherType.Handle;
 
-  if not Result then begin
+  if not Result then
+  begin
     var LType := BaseType;
-    while Assigned(LType) and not Result do begin
+
+    while Assigned(LType) and not Result do
+    begin
       Result := LType.Handle = AOtherType.Handle;
       LType := LType.BaseType;
     end;
@@ -1974,7 +2050,8 @@ function TRttiTypeHelper.MakeGenericType(const ATypeArguments: array of PTypeInf
 begin
   Result := nil;
 
-  if IsPublicType then begin
+  if IsPublicType then
+  begin
     var LArgs := SplitString(ExtractGenericArguments(Handle), ',');
 
     for var I := Low(LArgs) to High(LArgs) do
@@ -1990,11 +2067,14 @@ begin
   Result := False;
   var LRttiType := Self;
 
-  while (LRttiType <> nil) and (LRttiType.Handle <> TypeInfo(TObject)) do begin
+  while (LRttiType <> nil) and (LRttiType.Handle <> TypeInfo(TObject)) do
+  begin
     var LMethods := LRttiType.GetDeclaredMethods;
 
-    for var Lethod in LMethods do  begin
-      if Lethod.IsConstructor and (Length(Lethod.GetParameters) = 0) then begin
+    for var Lethod in LMethods do
+    begin
+      if Lethod.IsConstructor and (Length(Lethod.GetParameters) = 0) then
+      begin
         AMethod := Lethod;
         Exit(True);
       end;
@@ -2009,8 +2089,10 @@ begin
   Result := False;
   var LMethods := GetDeclaredMethods;
 
-  for var LMethod in LMethods do begin
-    if LMethod.IsDestructor then begin
+  for var LMethod in LMethods do
+  begin
+    if LMethod.IsDestructor then
+    begin
       AMethod := LMethod;
       Exit(True);
     end;
@@ -2132,9 +2214,12 @@ class function TValueHelper.Equals(const Left, Right: TArray<TValue>): Boolean;
 begin
   Result := Length(Left) = Length(Right);
 
-  if Result then begin
-    for var I := Low(Left) to High(Left) do begin
-      if not SameValue(Left[I], Right[I]) then begin
+  if Result then
+  begin
+    for var I := Low(Left) to High(Left) do
+    begin
+      if not SameValue(Left[I], Right[I]) then
+      begin
         Result := False;
         Break;
       end;
@@ -2361,7 +2446,8 @@ class function TValueHelper.ToString(const AValues: array of TValue): string;
 begin
   Result := '';
 
-  for var I := Low(AValues) to High(AValues) do begin
+  for var I := Low(AValues) to High(AValues) do
+  begin
     if I > Low(AValues) then
       Result := Result + ', ';
 
@@ -2383,10 +2469,12 @@ begin
 
     tkEnumeration:
     begin
-      if IsBoolean then begin
+      if IsBoolean then
+      begin
         Result.VType := vtBoolean;
         Result.VBoolean := AsBoolean;
-      end else begin
+      end else
+      begin
         Result.VType := vtInteger;
         Result.VInteger := AsInteger;
       end;
@@ -2394,10 +2482,12 @@ begin
 
     tkFloat:
     begin
-      if IsCurrency then begin
+      if IsCurrency then
+      begin
         Result.VType := vtCurrency;
         Result.VCurrency := GetReferenceToRawData;
-      end else begin
+      end else
+      begin
         Result.VType := vtExtended;
         Result.VExtended := GetReferenceToRawData;
       end;
@@ -2420,43 +2510,44 @@ end;
 class function TValueHelper.ToVarRecs(const AValues: array of TValue): TArray<TVarRec>;
 begin
   SetLength(Result, Length(AValues));
-  for var I := Low(AValues) to High(AValues) do Result[I] := AValues[I].ToVarRec;
+
+  for var I := Low(AValues) to High(AValues) do
+    Result[I] := AValues[I].ToVarRec;
 end;
 
 class function TValueHelper.ToString(const AValue: TValue): string;
 begin
   case AValue.Kind of
     tkFloat:
-    begin
-      if AValue.IsDate then
-        Result := DateToStr(AValue.AsDate)
-      else if AValue.IsDateTime then
-        Result := DateTimeToStr(AValue.AsDateTime)
-      else if AValue.IsTime then
-        Result := TimeToStr(AValue.AsTime)
-      else
-        Result := AValue.ToString;
-    end;
+      begin
+        if AValue.IsDate then
+          Result := DateToStr(AValue.AsDate)
+        else if AValue.IsDateTime then
+          Result := DateTimeToStr(AValue.AsDateTime)
+        else if AValue.IsTime then
+          Result := TimeToStr(AValue.AsTime)
+        else
+          Result := AValue.ToString;
+      end;
 
     tkClass:
-    begin
-      var LObject := AValue.AsObject;
-      Result := Format('%s($%x)', [StripUnitName(LObject.ClassName), NativeInt(LObject)]);
-    end;
+      begin
+        var LObject := AValue.AsObject;
+        Result := Format('%s($%x)', [StripUnitName(LObject.ClassName), NativeInt(LObject)]);
+      end;
 
     tkInterface:
-    begin
-      var LInterface := AValue.AsInterface;
-      var LObject := LInterface as TObject;
-      Result := Format('%s($%x) as %s', [StripUnitName(LObject.ClassName), NativeInt(LInterface), StripUnitName(GetTypeName(AValue.TypeInfo))]);
-    end
+      begin
+        var LInterface := AValue.AsInterface;
+        var LObject := LInterface as TObject;
+        Result := Format('%s($%x) as %s', [StripUnitName(LObject.ClassName), NativeInt(LInterface), StripUnitName(GetTypeName(AValue.TypeInfo))]);
+      end
   else
     Result := AValue.ToString;
   end;
 end;
 
-function TValueHelper.TryConvert(ATypeInfo: PTypeInfo;
-  out AResult: TValue): Boolean;
+function TValueHelper.TryConvert(ATypeInfo: PTypeInfo; out AResult: TValue): Boolean;
 begin
   Result := False;
 
@@ -2474,34 +2565,13 @@ begin
     begin
       case Kind of
         tkRecord: Result := ConvNullable2Any(Self, ATypeInfo, AResult);
-{$IFDEF VER210}
-        // workaround for bug in RTTI.pas (fixed in XE)
-        tkUnknown:
-        begin
-          case ATypeInfo.Kind of
-            tkInteger, tkEnumeration, tkChar, tkWChar, tkInt64:
-            begin
-              AResult := TValue.FromOrdinal(ATypeInfo, 0);
-              Result := True;
-            end;
-            tkFloat:
-            begin
-              AResult := TValue.From<Extended>(0);
-              Result := True;
-            end;
-            tkUString:
-            begin
-              AResult := TValue.FromString('');
-              Result := True;
-            end;
-          end;
-        end;
-{$ENDIF}
       end;
+
       case ATypeInfo.Kind of
         tkRecord: Result := ConvAny2Nullable(Self, ATypeInfo, AResult);
       end
     end;
+
     if not Result then
     begin
       Result := TryCast(ATypeInfo, AResult);
@@ -2521,28 +2591,21 @@ type
     FHandle: Pointer;
     FRttiDataSize: Integer;
     FPackage: Pointer{TRttiPackage};
-    FParent: Pointer{TRttiObject};
-    FAttributeGetter: Pointer{TFunc<TArray<TCustomAttribute>>};
+    FParent: Pointer {TRttiObject};
+    FAttributeGetter: Pointer {TFunc<TArray<TCustomAttribute>>};
   end;
 
   TRttiObjectAccess = class helper for TRttiObject
   public
-    procedure Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
+    procedure Init(Parent: TRttiType; PropInfo: PPropInfoExt);
   end;
 
 
-procedure TRttiObjectAccess.Init(Parent: TRttiType; PropInfo: {$IFDEF DELPHI_XE3_UP}PPropInfoExt{$ELSE}PPropInfo {$ENDIF});
+procedure TRttiObjectAccess.Init(Parent: TRttiType; PropInfo: PPropInfoExt);
 const
-{$IFDEF AUTOREFCOUNT}
-  FHANDLE_OFFSET = (SizeOf(Pointer) * 2);
-  FPARENT_OFFSET = (SizeOf(Pointer) * 3);
-{$ELSE}
   FHANDLE_OFFSET = (SizeOf(Pointer) * 1);
   FPARENT_OFFSET = (SizeOf(Pointer) * 2);
-{$ENDIF}
 begin
-//if TRttiObject.InstanceSize <> TRttiObjectFieldRef.InstanceSize then
-//  assert;
   TRttiObjectFieldRef(Self).FParent := Parent;
   TRttiObjectFieldRef(Self).FHandle := PropInfo;
 end;
@@ -2566,13 +2629,10 @@ begin
 end;
 
 class destructor TRttiPropertyExtension.Destroy;
-var
-  LClass: TClass;
-  LPointer: Pointer;
 begin
-  for LClass in FPatchedClasses.Values do
+  for var LClass in FPatchedClasses.Values do
   begin
-    LPointer := PByte(LClass) + vmtSelfPtr;
+    var LPointer := PByte(LClass) + vmtSelfPtr;
     FreeMem(LPointer);
   end;
 
@@ -2581,8 +2641,6 @@ begin
 end;
 
 constructor TRttiPropertyExtension.Create(AParent: PTypeInfo; const AName: string; APropertyType: PTypeInfo);
-var
-  M: TMarshaller;
 begin
   inherited Create;
   FPropInfo.PropType := Pointer(NativeInt(APropertyType) - SizeOf(PTypeInfo));
@@ -2591,12 +2649,12 @@ begin
     FPropInfo.NameLength := 255
   else
     FPropInfo.NameLength := AName.Length;
-  Move(M.AsAnsi(AName).ToPointer^, FPropInfo.NameData[0], FPropInfo.NameLength);
+
+  var LMarshaller: TMarshaller;
+  Move(LMarshaller.AsAnsi(AName).ToPointer^, FPropInfo.NameData[0], FPropInfo.NameLength);
 
   Init(GetRttiType(AParent), @FPropInfo);
-
   FRegister.Add(TPair<PTypeInfo, string>.Create(AParent, AName), Self);
-
   PPointer(Self)^ := FPatchedClasses[Self.ClassType];
 end;
 
@@ -2610,23 +2668,19 @@ begin
   Result := DoGetValue(Instance);
 end;
 
-procedure TRttiPropertyExtension.DoSetValue(Instance: Pointer;
-  const AValue: TValue);
+procedure TRttiPropertyExtension.DoSetValue(Instance: Pointer; const AValue: TValue);
 begin
   FSetter(Instance, AValue);
 end;
 
-procedure TRttiPropertyExtension.DoSetValueStub(Instance: Pointer;
-  const AValue: TValue);
+procedure TRttiPropertyExtension.DoSetValueStub(Instance: Pointer; const AValue: TValue);
 begin
   DoSetValue(Instance, AValue);
 end;
 
 class function TRttiPropertyExtension.FindByName(AParent: TRttiType; const APropertyName: string): TRttiPropertyExtension;
-var
-  LPropertyExtension: TRttiPropertyExtension;
 begin
-  for LPropertyExtension in FRegister.Values do
+  for var LPropertyExtension in FRegister.Values do
   begin
     if (LPropertyExtension.Parent = AParent) and SameText(LPropertyExtension.Name, APropertyName) then
     begin
@@ -2648,8 +2702,10 @@ begin
   var LScope := AFullPropertyName.SubString(0, AFullPropertyName.LastDelimiter('.'));
   var LName := AFullPropertyName.SubString(AFullPropertyName.LastDelimiter('.') + 1);
 
-  for var LProp in FRegister.Values do begin
-    if (string.Compare(LProp.Name, LName, [coIgnoreCase]) = 0) and LProp.Parent.AsInstance.MetaclassType.QualifiedClassName.EndsWith(LScope, True) then begin
+  for var LProp in FRegister.Values do
+  begin
+    if (string.Compare(LProp.Name, LName, [coIgnoreCase]) = 0) and LProp.Parent.AsInstance.MetaclassType.QualifiedClassName.EndsWith(LScope, True) then
+    begin
       Result := LProp;
       Break;
     end;
@@ -2688,19 +2744,15 @@ end;
 
 class procedure TRttiPropertyExtension.InitVirtualMethodTable;
 const
-  MaxIndex = 17;  // TRttiInstanceProperty.GetPropInfo
+  kMaxIndex = 17;  // TRttiInstanceProperty.GetPropInfo
 {$POINTERMATH ON}
 type
   PVtable = ^Pointer;
 {$POINTERMATH OFF}
-var
-  LSize: Integer;
-  LData: Pointer;
-  LPatchedClass: TClass;
 begin
-  LSize := SizeOf(Pointer) * (1 + MaxIndex - (vmtSelfPtr div SizeOf(Pointer)));
-  LData := AllocMem(LSize);
-  LPatchedClass := TClass(PByte(LData) - vmtSelfPtr);
+  var LSize := SizeOf(Pointer) * (1 + kMaxIndex - (vmtSelfPtr div SizeOf(Pointer)));
+  var LData := AllocMem(LSize);
+  var LPatchedClass := TClass(PByte(LData) - vmtSelfPtr);
   FPatchedClasses.Add(Self, LPatchedClass);
   Move((PByte(Self) + vmtSelfPtr)^, LData^, LSize);
 
@@ -2715,7 +2767,8 @@ class function TStrUtils.SplitString(const AStr, ADelimiters: string): TArray<st
 begin
   Result := nil;
 
-  if AStr <> string.Empty then begin
+  if AStr <> string.Empty then
+  begin
     // Determine the length of the Resulting array
     var LSplitPoints := 0;
     for var I := 0 to AStr.Length - 1 do
@@ -2729,7 +2782,8 @@ begin
 
     repeat
       var LIndexFound := AStr.IndexOfAny(ADelimiters.ToCharArray, LStartIndex);
-      if LIndexFound <> -1 then begin
+      if LIndexFound <> -1 then
+      begin
         Result[LCurrentSplit] := AStr.SubString(LStartIndex, LIndexFound - LStartIndex);
         Inc(LCurrentSplit);
         LStartIndex := LIndexFound + 1;
@@ -2741,13 +2795,12 @@ begin
   end;
 end;
 
-class function TListStringUtils.ToArray(const values: TList<string>): TArray<string>;
-var
-  i : Integer;
+class function TListStringUtils.ToArray(const AValues: TList<string>): TArray<string>;
 begin
-  SetLength(Result,values.Count);
-  for i := 0 to values.Count - 1 do
-    Result[i] := values[i];
+  SetLength(Result,AValues.Count);
+
+  for var I := 0 to AValues.Count - 1 do
+    Result[I] := AValues[I];
 end;
 
 class function TInterfaceHelper.GetType(const AIntf: IInterface): TRttiInterfaceType;
@@ -2770,18 +2823,23 @@ begin
   end;
 
   // For interfaces obtained from TRawVirtualClass (e.g. iOS, Android & Mac intf)
-  if LImplObj.ClassType.InheritsFrom(TRawVirtualClass) then begin
+  if LImplObj.ClassType.InheritsFrom(TRawVirtualClass) then
+  begin
     LGuid := LImplObj.GetField('FIIDs').GetValue(LImplObj).AsType<TArray<TGUID>>[0];
     Result := GetType(LGuid);
-  end else begin
+  end else
+  begin
    // For interfaces obtained from TVirtualInterface
-    if LImplObj.ClassType.InheritsFrom(TVirtualInterface) then begin
+    if LImplObj.ClassType.InheritsFrom(TVirtualInterface) then
+    begin
       LGuid := LImplObj.GetField('FIID').GetValue(LImplObj).AsType<TGUID>;
       Result := GetType(LGuid);
-    end else begin
+    end else
+    begin
       // For interfaces obtained from Delphi object. Code taken from Remy Lebeau's answer
       // http://stackoverflow.com/questions/39584234/how-to-obtain-rtti-from-an-interface-reference-in-delphi/
-      for LIntfType in (Context.GetType(LImplObj.ClassType) as TRttiInstanceType).GetImplementedInterfaces do begin
+      for LIntfType in (Context.GetType(LImplObj.ClassType) as TRttiInstanceType).GetImplementedInterfaces do
+      begin
         if LImplObj.GetInterface(LIntfType.GUID, LTempIntf) and (AIntf = LTempIntf) then
           Exit(LIntfType);
       end;
@@ -2815,10 +2873,8 @@ begin
 end;
 
 class function TInterfaceHelper.GetMethod(const AIntf: IInterface; const AMethodName: string): TRttiMethod;
-var
-  LType: TRttiInterfaceType;
 begin
-  LType := GetType(AIntf);
+  var LType: TRttiInterfaceType := GetType(AIntf);
 
   if Assigned(LType) then
     Result := LType.GetMethod(AMethodName)
@@ -2827,10 +2883,8 @@ begin
 end;
 
 class function TInterfaceHelper.GetMethods(const AIntf: IInterface): TArray<TRttiMethod>;
-var
-  LType: TRttiInterfaceType;
 begin
-  LType := GetType(AIntf);
+  var LType: TRttiInterfaceType := GetType(AIntf);
 
   if Assigned(LType) then
     Result := LType.GetMethods
@@ -2839,10 +2893,8 @@ begin
 end;
 
 class function TInterfaceHelper.GetQualifiedName(const AGuid: TGUID): string;
-var
-  LType: TRttiInterfaceType;
 begin
-  LType := GetType(AGuid);
+  var LType: TRttiInterfaceType := GetType(AGuid);
 
   if Assigned(LType) then
     Result := LType.QualifiedName
@@ -2857,10 +2909,8 @@ begin
 end;
 
 class function TInterfaceHelper.GetTypeName(const AGuid: TGUID): string;
-var
-  LType: TRttiInterfaceType;
 begin
-  LType := GetType(AGuid);
+  var LType: TRttiInterfaceType := GetType(AGuid);
 
   if Assigned(LType) then
     Result := LType.Name
@@ -2887,10 +2937,8 @@ begin
 end;
 
 class function TInterfaceHelper.InvokeMethod(const AIntf: IInterface; const AMethodName: string; const Args: array of TValue): TValue;
-var
-  LMethod: TRttiMethod;
 begin
-  LMethod := GetMethod(AIntf, AMethodName);
+  var LMethod := GetMethod(AIntf, AMethodName);
 
   if not Assigned(LMethod) then
     raise EMethodNotFound.Create(AMethodName);
@@ -2899,14 +2947,13 @@ begin
 end;
 
 class function TInterfaceHelper.GetTypeName(const AIntf: IInterface): string;
-var
-  LType: TRttiInterfaceType;
 begin
-  Result := string.Empty;
-  LType := GetType(AIntf);
+  var LType: TRttiInterfaceType := GetType(AIntf);
 
   if Assigned(LType) then
-    Result := LType.Name;
+    Result := LType.Name
+  else
+    Result := EmptyStr;
 end;
 
 class procedure TInterfaceHelper.RefreshCache;
@@ -2917,15 +2964,14 @@ begin
 
   TThread.CreateAnonymousThread(
     procedure
-    var
-      LType: TRttiType;
-      LIntfType: TRttiInterfaceType;
     begin
       FInterfaceTypes.Clear;
 
-      for LType in Context.GetTypes do begin
-        if LType.IsInterface then begin
-          LIntfType := (LType as TRttiInterfaceType);
+      for var LType in Context.GetTypes do
+      begin
+        if LType.IsInterface then
+        begin
+          var LIntfType := (LType as TRttiInterfaceType);
 
           if TIntfFlag.ifHasGuid in LIntfType.IntfFlags then
             FInterfaceTypes.AddOrSetValue(LIntfType.GUID, LIntfType);
@@ -2955,17 +3001,17 @@ begin
 
   // Need to be protected because FCaching is changed inside. This will block GetType method.
   TMonitor.Enter(FInterfaceTypes);
-  if not FCaching then RefreshCache;
-  TMonitor.Exit(FInterfaceTypes);
 
+  if not FCaching then
+    RefreshCache;
+
+  TMonitor.Exit(FInterfaceTypes);
   WaitIfCaching;
 end;
 
 class function TInterfaceHelper.GetType(const AIntfInTValue: TValue): TRttiInterfaceType;
-var
-  LType: TRttiType;
 begin
-  LType := AIntfInTValue.RttiType;
+  var LType := AIntfInTValue.RttiType;
 
   if LType is TRttiInterfaceType then
     Result := LType as TRttiInterfaceType

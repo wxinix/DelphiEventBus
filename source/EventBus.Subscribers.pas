@@ -221,13 +221,16 @@ begin
   var LRttiType := Context.GetType(ASubscriberClass);
   var LRttiMethods := LRttiType.GetMethods;
 
-  for var LMethod in LRttiMethods do begin
+  for var LMethod in LRttiMethods do
+  begin
     var LAttribute: T;
 
-    if LMethod.TryGetAttribute<T>(LAttribute) then begin
+    if LMethod.TryGetAttribute<T>(LAttribute) then
+    begin
       var LParamsLength := Length(LMethod.GetParameters);
 
-      if (LParamsLength <> 1) or (LMethod.GetParameters[0].ParamType.TypeKind <> LAttribute.ArgTypeKind) then begin
+      if (LParamsLength <> 1) or (LMethod.GetParameters[0].ParamType.TypeKind <> LAttribute.ArgTypeKind) then
+      begin
         raise EInvalidSubscriberMethod.CreateFmt(
           'Method %s.%s has attribute %s with %d argument(s) and argument[0] is of type %s.' +
           'Only 1 argument allowed and that argument must be of %s type.',
@@ -248,7 +251,8 @@ begin
     end;
   end;
 
-  if (Length(Result) < 1) and ARaiseExcIfEmpty then begin
+  if (Length(Result) < 1) and ARaiseExcIfEmpty then
+  begin
     raise EObjectHasNoSubscriberMethods.CreateFmt(
       'Class %s and its super classes have no public methods with attribute %s defined.',
       [ASubscriberClass.QualifiedClassName, T.ClassName]);
@@ -265,7 +269,9 @@ end;
 
 destructor TSubscription.Destroy;
 begin
-  if Assigned(FSubscriberMethod) then FreeAndNil(FSubscriberMethod);
+  if Assigned(FSubscriberMethod) then
+    FreeAndNil(FSubscriberMethod);
+
   inherited;
 end;
 

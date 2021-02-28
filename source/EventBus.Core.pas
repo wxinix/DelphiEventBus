@@ -114,7 +114,8 @@ begin
   var LAttrName := T.ClassName;
   var LSubscriberToCategoriesMap: TSubscriberToMethodCategoriesMap;
 
-  if FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then begin
+  if FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then
+  begin
     LSubscriberToCategoriesMap := FSubscriberToCategoriesByAttrName[LAttrName];
 
     if LSubscriberToCategoriesMap.ContainsKey(ASubscriber) then
@@ -127,14 +128,17 @@ begin
   var LAttrName := T.ClassName;
   var LSubsToCatsMap: TSubscriberToMethodCategoriesMap;
 
-  if not FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then begin
+  if not FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then
+  begin
     LSubsToCatsMap := TSubscriberToMethodCategoriesMap.Create([doOwnsValues]);
     FSubscriberToCategoriesByAttrName.Add(LAttrName, LSubsToCatsMap);
-  end else begin
+  end else
+  begin
     LSubsToCatsMap := FSubscriberToCategoriesByAttrName[LAttrName];
   end;
 
-  if (not LSubsToCatsMap.TryGetValue(ASubscriber, Result)) then begin
+  if (not LSubsToCatsMap.TryGetValue(ASubscriber, Result)) then
+  begin
     Result := TMethodCategories.Create;
     LSubsToCatsMap.Add(ASubscriber, Result);
   end;
@@ -145,14 +149,17 @@ begin
   var LAttrName := T.ClassName;
   var LCatToSubsMap: TMethodCategoryToSubscriptionsMap;
 
-  if not FCategoryToSubscriptionsByAttrName.ContainsKey(LAttrName) then begin
+  if not FCategoryToSubscriptionsByAttrName.ContainsKey(LAttrName) then
+  begin
     LCatToSubsMap := TMethodCategoryToSubscriptionsMap.Create([doOwnsValues]);
     FCategoryToSubscriptionsByAttrName.Add(LAttrName, LCatToSubsMap);
-  end else begin
+  end else
+  begin
     LCatToSubsMap := FCategoryToSubscriptionsByAttrName[LAttrName];
   end;
 
-  if (not LCatToSubsMap.ContainsKey(ACategory)) then begin
+  if (not LCatToSubsMap.ContainsKey(ACategory)) then
+  begin
     Result := TSubscriptions.Create(
       TComparer<TSubscription>.Construct(
         function(const Left, Right: TSubscription): Integer
@@ -167,7 +174,8 @@ begin
     );
 
     LCatToSubsMap.Add(ACategory, Result);
-  end else begin
+  end else
+  begin
     Result := LCatToSubsMap[ACategory];
   end;
 end;
@@ -180,7 +188,8 @@ begin
 
     ASubscription.SubscriberMethod.Method.Invoke(ASubscription.Subscriber, Args);
   except
-    on E: Exception do begin
+    on E: Exception do
+    begin
       raise EInvokeSubscriberError.CreateFmt(
         'Error invoking subscriber method. Subscriber class: %s. Event type: %s. Original exception %s: %s.',
         [
@@ -229,7 +238,8 @@ begin
     if not TryGetCategorizedSubscriptions<ChannelAttribute>(TSubscriberMethod.EncodeCategory(AChannel), LSubscriptions) then
       Exit;
 
-    for var LSubscription in LSubscriptions do begin
+    for var LSubscription in LSubscriptions do
+    begin
       if (LSubscription.Context <> AChannel) or (not LSubscription.Active) then
         Continue;
 
@@ -252,7 +262,8 @@ begin
     if not TryGetCategorizedSubscriptions<SubscribeAttribute>(TSubscriberMethod.EncodeCategory(AContext, LEventType), LSubscriptions) then
       Exit;
 
-    for var LSubscription in LSubscriptions do begin
+    for var LSubscription in LSubscriptions do
+    begin
       if not LSubscription.Active then
         Continue;
 
@@ -335,7 +346,7 @@ end;
 procedure TEventBus.RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext: string; const ANewContext: string);
 const
   sSubscriberHasNRE = 'Subscruber has null reference.';
-  sNoMatchedSubscription = 'There is no existing subscription that matches the event type [%s] and old context [%s].';
+  sNoMatchedSubscription = 'No existing subscription that matches the old context [%s] and the event type [%s].';
 begin
   FMrewSync.BeginWrite;
 
@@ -348,10 +359,11 @@ begin
     var LRemovedSubscription := RemoveSubscription<SubscribeAttribute>(ASubscriber, LCategory);
 
     if LRemovedSubscription = nil then
-      raise EArgumentException.CreateFmt(sNoMatchedSubscription, [LEventName, AOldContext]);
+      raise EArgumentException.CreateFmt(sNoMatchedSubscription, [AOldContext, LEventName]);
 
     try
-      with LRemovedSubscription.SubscriberMethod do begin
+      with LRemovedSubscription.SubscriberMethod do
+      begin
         var LNewSubMethod := TSubscriberMethod.Create(Method, EventType, ThreadMode, ANewContext, Priority);
         Subscribe<SubscribeAttribute>(ASubscriber, LNewSubMethod);
       end;
@@ -396,14 +408,17 @@ begin
   if not TryGetCategorizedSubscriptions<T>(ACategory, LSubscriptions) then
     Exit;
 
-  for var LSubscription in LSubscriptions do begin
-    if LSubscription.Subscriber = ASubscriber then begin
+  for var LSubscription in LSubscriptions do
+  begin
+    if LSubscription.Subscriber = ASubscriber then
+    begin
       Result := LSubscriptions.Extract(LSubscription); // Found!
       Break;
     end
   end;
 
-  if Assigned(Result) then begin
+  if Assigned(Result) then
+  begin
     Unsubscribe<T>(ASubscriber, ACategory);
     Result.Active := False;
   end;
@@ -429,9 +444,11 @@ begin
   var LSubscriptions := GetCreateCategorizedSubscriptions<T>(LCategory);
   var LNewSubscription := TSubscription.Create(ASubscriber, ASubscriberMethod);
 
-  if not LSubscriptions.Contains(LNewSubscription) then begin
+  if not LSubscriptions.Contains(LNewSubscription) then
+  begin
     LSubscriptions.Add(LNewSubscription);
-  end else begin
+  end else
+  begin
     LNewSubscription.Free;
     raise ESubscriberMethodAlreadyRegistered.CreateFmt('Subscriber [%s] already registered to %s.', [ASubscriber.ClassName, LCategory]);
   end;
@@ -445,7 +462,8 @@ begin
   var LAttrName := T.ClassName;
   var LSubscriberToCategoriesMap: TSubscriberToMethodCategoriesMap;
 
-  if FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then begin
+  if FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then
+  begin
     LSubscriberToCategoriesMap := FSubscriberToCategoriesByAttrName[LAttrName];
 
     if LSubscriberToCategoriesMap.ContainsKey(ASubscriber) then
@@ -461,7 +479,8 @@ begin
   var LCatToSubsMap: TMethodCategoryToSubscriptionsMap;
   ASubscriptions := nil;
 
-  if FCategoryToSubscriptionsByAttrName.ContainsKey(LAttrName) then begin
+  if FCategoryToSubscriptionsByAttrName.ContainsKey(LAttrName) then
+  begin
     LCatToSubsMap := FCategoryToSubscriptionsByAttrName[LAttrName];
 
     if LCatToSubsMap.ContainsKey(ACategory) then
@@ -489,7 +508,8 @@ begin
     var LCategories: TMethodCategories;
 
     if TryGetSubscriberCategories<T>(ASubscriber, LCategories) then
-      for var LCategory in LCategories do Unsubscribe<T>(ASubscriber, LCategory);
+      for var LCategory in LCategories do
+        Unsubscribe<T>(ASubscriber, LCategory);
 
     DeleteSubscriber<T>(ASubscriber);
   finally
@@ -506,11 +526,13 @@ begin
   if (LSubscriptions.Count < 1) then
     Exit;
 
-  for var I := LSubscriptions.Count - 1 downto 0 do begin
+  for var I := LSubscriptions.Count - 1 downto 0 do
+  begin
     var LSubscription := LSubscriptions[I];
     // Note - If the subscriber has been freed without unregistering itself, calling
     // LSubscription.Subscriber.Equals() will cause Access Violation, hence use '=' instead.
-    if LSubscription.Subscriber = ASubscriber then begin
+    if LSubscription.Subscriber = ASubscriber then
+    begin
       LSubscription.Active := False;
       LSubscriptions.Delete(I);
     end;
