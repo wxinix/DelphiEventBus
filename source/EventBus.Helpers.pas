@@ -65,16 +65,51 @@ type
 
   TAttributeUtils = class
   public
-    class function ContainsAttribute(const AAttributes: TArray<TCustomAttribute>; const AAttributeClass: TCustomAttributeClass): Boolean;
-    class function FindAttribute(const AAttributes: TArray<TCustomAttribute>; const AAttributeClass: TCustomAttributeClass): TCustomAttribute; overload;
-    class function FindAttribute(const AAttributes: TArray<TCustomAttribute>; const AAttributeClass: TCustomAttributeClass; var AAttribute: TCustomAttribute; const AStartIndex: Integer = 0): Integer; overload;
-    class function FindAttributes(const AAttributes: TArray<TCustomAttribute>; const AAttributeClass: TCustomAttributeClass): TArray<TCustomAttribute>;
+    /// <summary>
+    ///   Checks the attributes array contains an attribute of the specified type.
+    /// </summary>
+    class function ContainsAttribute<T: TCustomAttribute>(const AAttributes: TArray<TCustomAttribute>): Boolean;
+
+    /// <summary>
+    ///   Finds an attribute from the list that is of the specified attribute type.
+    /// </summary>
+    class function FindAttribute<T: TCustomAttribute>(const AAttributes: TArray<TCustomAttribute>): TCustomAttribute; overload;
+
+    /// <summary>
+    ///   Finds an attribute from the list that is of the specified attribute type, and returns the index
+    ///   of the attribute found.
+    /// </summary>
+    class function FindAttribute<T: TCustomAttribute>(const AAttributes: TArray<TCustomAttribute>; var AAttribute: TCustomAttribute;
+      const AStartIndex: Integer = 0): Integer; overload;
+
+    /// <summary>
+    ///   Finds as many attributes from the list that are of the specified attribute type.
+    /// </summary>
+    class function FindAttributes<T: TCustomAttribute>(const AAttributes: TArray<TCustomAttribute>): TArray<TCustomAttribute>;
   end;
 
   TStrUtils = class
+    /// <summary>
+    ///   Encodes the string by using the string representation of its white spaces. For example,
+    ///   "#13Hello#10World" will be encoded as a string "#13'Hello'#10'World'", where whitespace #13
+    ///   appears as a string '#13'. <br />
+    /// </summary>
     class function EncodeWhitespace(const AStr: string): string;
+
+    /// <summary>
+    ///   Joins the strings with the specified delimiter.
+    /// </summary>
     class function Join(const AValues: TArray<string>; const ADelimiter: string): string; overload;
-    class function PadString(const AStr: string; const ATotalLength: Integer; const APadLeft: Boolean = True; APadChar: Char = ' '): string;
+
+    /// <summary>
+    ///   Pads the string if its length is smaller than the specified total length.
+    /// </summary>
+    class function PadString(const AStr: string; const ATotalLength: Integer; const APadLeft: Boolean = True;
+      const APadChar: Char = ' '): string;
+
+    /// <summary>
+    ///   Splits the string using the specified delimiter.
+    /// </summary>
     class function SplitString(const AStr, ADelimiters: string): TArray<string>;
   end;
 
@@ -724,12 +759,14 @@ type
     /// <summary>
     ///   Performs a call to the described method.
     /// </summary>
-    class function InvokeMethod(const AIntf: IInterface; const AMethodName: string; const Args: array of TValue): TValue; overload; static;
+    class function InvokeMethod(const AIntf: IInterface; const AMethodName: string;
+      const Args: array of TValue): TValue; overload; static;
 
     /// <summary>
     ///   Performs a call to the described method.
     /// </summary>
-    class function InvokeMethod(const AIntfInTValue: TValue; const AMethodName: string; const Args: array of TValue): TValue; overload; static;
+    class function InvokeMethod(const AIntfInTValue: TValue; const AMethodName: string;
+      const Args: array of TValue): TValue; overload; static;
   end;
 
 type
@@ -771,27 +808,20 @@ uses
 var
   Enumerations: TDictionary<PTypeInfo, TStrings>;
 
-class function TAttributeUtils.ContainsAttribute(const AAttributes: TArray<TCustomAttribute>; const AAttributeClass: TCustomAttributeClass): Boolean;
+class function TAttributeUtils.ContainsAttribute<T>(const AAttributes: TArray<TCustomAttribute>): Boolean;
 begin
-  Result := FindAttribute(AAttributes,AAttributeClass) <> nil;
+  Result := FindAttribute<T>(AAttributes) <> nil;
 end;
 
-class function TAttributeUtils.FindAttribute(const AAttributes: TArray<TCustomAttribute>; const AAttributeClass: TCustomAttributeClass): TCustomAttribute;
-begin
-  Result := nil;
-
-  for var LAttribute in AAttributes do
-    if LAttribute.ClassType = AAttributeClass then Exit(LAttribute);
-end;
-
-class function TAttributeUtils.FindAttribute(const AAttributes: TArray<TCustomAttribute>; const AAttributeClass: TCustomAttributeClass; var AAttribute: TCustomAttribute; const AStartIndex: Integer = 0): Integer;
+class function TAttributeUtils.FindAttribute<T>(const AAttributes: TArray<TCustomAttribute>; var AAttribute: TCustomAttribute;
+  const AStartIndex: Integer = 0): Integer;
 begin
   Result := -1;
   AAttribute := nil;
 
-  for var I := AStartIndex to Length(AAttributes) -1 do
+  for var I := AStartIndex to High(AAttributes) do
   begin
-    if AAttributes[I].ClassType = AAttributeClass then
+    if AAttributes[I] is T then
     begin
       AAttribute := AAttributes[I];
       Exit(I);
@@ -799,23 +829,26 @@ begin
   end;
 end;
 
-class function TAttributeUtils.FindAttributes(const AAttributes: TArray<TCustomAttribute>; const AAttributeClass: TCustomAttributeClass): TArray<TCustomAttribute>;
+class function TAttributeUtils.FindAttribute<T>(const AAttributes: TArray<TCustomAttribute>): TCustomAttribute;
 begin
-  SetLength(Result, 0);
+  Result := nil;
 
-  var I := 0;
-  for var LAttribute in AAttributes do
+  for var LAttr in AAttributes do
+    if LAttr is T then
+      Exit(LAttr);
+end;
+
+class function TAttributeUtils.FindAttributes<T>(const AAttributes: TArray<TCustomAttribute>): TArray<TCustomAttribute>;
+begin
+  Result := [];
+
+  for var LAttr in AAttributes do
   begin
-    if LAttribute.ClassType = AAttributeClass then
-    begin
-      SetLength(Result, I + 1);
-      Result[I] := LAttribute;
-      Inc(I);
-    end;
+    if LAttr is T then
+      Result := Result + [LAttr];
   end;
 end;
 
-// #13Hello#10World  will be encoded as a string "#13'Hello'#10'World'", where whitespace appears as a string.
 class function TStrUtils.EncodeWhitespace(const AStr: string): string;
 const
   sDelimiter: array[Boolean] of string = (#39, ''); // #39 is single quote.
@@ -852,7 +885,8 @@ begin
   end;
 end;
 
-class function TStrUtils.PadString(const AStr: string; const ATotalLength: Integer; const APadLeft: Boolean = True; APadChar: Char = ' '): string;
+class function TStrUtils.PadString(const AStr: string; const ATotalLength: Integer; const APadLeft: Boolean = True;
+  const APadChar: Char = ' '): string;
 begin
   Result := AStr;
 
@@ -908,7 +942,8 @@ var
   LType: TRttiType;
   LValue: TValue;
 begin
-  Result := TryGetRttiType(ATarget, LType) and LType.IsGenericTypeOf('Nullable') and ASource.TryConvert(LType.GetGenericArguments[0].Handle, LValue);
+  Result := TryGetRttiType(ATarget, LType) and LType.IsGenericTypeOf('Nullable') and
+    ASource.TryConvert(LType.GetGenericArguments[0].Handle, LValue);
 
   if Result then
   begin
@@ -1006,13 +1041,22 @@ begin
     end else
     begin
       var LType: TRttiType;
+      if not TryGetRttiType(ASource.TypeInfo, LType) then
+        Exit;
+
+      if not LType.IsGenericTypeOf('IList')  then
+        Exit;
+
       var LMethod: TRttiMethod;
-      if TryGetRttiType(ASource.TypeInfo, LType) and (GetTypeName(ATarget) = 'IList') and LType.IsGenericTypeOf('IList') and LType.TryGetMethod('AsList', LMethod) then
-      begin
-        var LInterface := LMethod.Invoke(ASource, []).AsInterface;
-        AResult := TValue.From(@LInterface, ATarget);
-        Result := True;
-      end;
+      if not LType.TryGetMethod('AsList', LMethod) then
+        Exit;
+
+      if not (GetTypeName(ATarget) = 'IList') then
+        Exit;
+
+      var LInterface := LMethod.Invoke(ASource, []).AsInterface;
+      AResult := TValue.From(@LInterface, ATarget);
+      Result := True;
     end;
   end;
 end;
@@ -2026,7 +2070,10 @@ begin
 
   if Assigned(LRttiType) and IsGenericTypeDefinition then
   begin
-    if SameText(GetGenericTypeDefinition, LRttiType.GetGenericTypeDefinition) or SameText(GetGenericTypeDefinition(False), LRttiType.GetGenericTypeDefinition(False)) then
+    var LIsSameExclUnitName := SameText(GetGenericTypeDefinition, LRttiType.GetGenericTypeDefinition);
+    var LIsSameInclUnitName := SameText(GetGenericTypeDefinition(False), LRttiType.GetGenericTypeDefinition(False));
+
+    if LIsSameExclUnitName or LIsSameInclUnitName then
     begin
       Result := True;
       var LArgs := GetGenericArguments;
@@ -2085,7 +2132,9 @@ begin
 
     while Assigned(LType) and not Result do
     begin
-      Result := SameText(LType.Name, AOtherTypeName) or (LType.IsPublicType and SameText(LType.QualifiedName, AOtherTypeName));
+      var LIsUnqualifiedNameSame := SameText(LType.Name, AOtherTypeName);
+      var LIsQualifiedNameSame := (LType.IsPublicType and SameText(LType.QualifiedName, AOtherTypeName));
+      Result := LIsUnqualifiedNameSame or LIsQualifiedNameSame;
       LType := LType.BaseType;
     end;
   end;
@@ -2600,7 +2649,8 @@ begin
       begin
         var LInterface := AValue.AsInterface;
         var LObject := LInterface as TObject;
-        Result := Format('%s($%x) as %s', [StripUnitName(LObject.ClassName), NativeInt(LInterface), StripUnitName(GetTypeName(AValue.TypeInfo))]);
+        Result := Format('%s($%x) as %s',
+          [StripUnitName(LObject.ClassName), NativeInt(LInterface), StripUnitName(GetTypeName(AValue.TypeInfo))]);
       end
   else
     Result := AValue.ToString;
@@ -2659,7 +2709,6 @@ type
   public
     procedure Init(Parent: TRttiType; PropInfo: PPropInfoExt);
   end;
-
 
 procedure TRttiObjectAccess.Init(Parent: TRttiType; PropInfo: PPropInfoExt);
 const
@@ -2764,7 +2813,8 @@ begin
 
   for var LProp in FRegister.Values do
   begin
-    if (string.Compare(LProp.Name, LName, [coIgnoreCase]) = 0) and LProp.Parent.AsInstance.MetaclassType.QualifiedClassName.EndsWith(LScope, True) then
+    var LPropParentName := LProp.Parent.AsInstance.MetaclassType.QualifiedClassName;
+    if (string.Compare(LProp.Name, LName, [coIgnoreCase]) = 0) and LPropParentName.EndsWith(LScope, True) then
     begin
       Result := LProp;
       Break;
@@ -2836,7 +2886,7 @@ begin
 
     SetLength(Result, LSplitPoints + 1);
 
-    // Split the string and fill the Resulting array
+    // Split the string and fill the resulting array
     var LStartIndex := 0;
     var LCurrentSplit := 0;
 
@@ -2978,7 +3028,8 @@ begin
     Result := EmptyStr;
 end;
 
-class function TInterfaceHelper.InvokeMethod(const AIntfInTValue: TValue; const AMethodName: string; const Args: array of TValue): TValue;
+class function TInterfaceHelper.InvokeMethod(const AIntfInTValue: TValue; const AMethodName: string;
+  const Args: array of TValue): TValue;
 var
   LMethod: TRttiMethod;
   LType: TRttiInterfaceType;
@@ -2996,7 +3047,8 @@ begin
     raise EMethodNotFound.Create(AMethodName);
 end;
 
-class function TInterfaceHelper.InvokeMethod(const AIntf: IInterface; const AMethodName: string; const Args: array of TValue): TValue;
+class function TInterfaceHelper.InvokeMethod(const AIntf: IInterface; const AMethodName: string;
+  const Args: array of TValue): TValue;
 begin
   var LMethod := GetMethod(AIntf, AMethodName);
 

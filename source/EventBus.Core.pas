@@ -48,39 +48,144 @@ uses
 type
   {$REGION 'Type aliases to improve readability'}
   TSubscriptions = TObjectList<TSubscription>;
-  TMethodCategory = string;
-  TMethodCategories = TList<TMethodCategory>;
-  TMethodCategoryToSubscriptionsMap = TObjectDictionary<TMethodCategory, TSubscriptions>;
-  TSubscriberToMethodCategoriesMap = TObjectDictionary<TObject, TMethodCategories>;
+  TCategory = string;
+  TCategories = TList<TCategory>;
+  TCategoryToSubscriptionsMap = TObjectDictionary<TCategory, TSubscriptions>;
+  TSubscriberToCategoriesMap = TObjectDictionary<TObject, TCategories>;
 
   TAttributeName = string;
-  TMethodCategoryToSubscriptionsByAttributeName = TObjectDictionary<TAttributeName, TMethodCategoryToSubscriptionsMap>;
-  TSubscriberToMethodCategoriesByAttributeName = TObjectDictionary<TAttributeName, TSubscriberToMethodCategoriesMap>;
+  TCategoryToSubscriptionsByAttributeName = TObjectDictionary<TAttributeName, TCategoryToSubscriptionsMap>;
+  TSubscriberToCategoriesByAttributeName = TObjectDictionary<TAttributeName, TSubscriberToCategoriesMap>;
   {$ENDREGION}
 
   TEventBus = class(TInterfacedObject, IEventBus)
   strict private
-    FCategoryToSubscriptionsByAttrName: TMethodCategoryToSubscriptionsByAttributeName;
+    FCategoryToSubscriptionsByAttrName: TCategoryToSubscriptionsByAttributeName;
     FMrewSync: TLightweightMREW;
-    FSubscriberToCategoriesByAttrName: TSubscriberToMethodCategoriesByAttributeName;
-    procedure DeleteSubscriber<T: TSubscriberMethodAttribute>(ASubscriber: TObject);
-    function GetCreateSubscriberCategories<T: TSubscriberMethodAttribute>(const ASubscriber: TObject): TMethodCategories;
-    function GetCreateCategorizedSubscriptions<T: TSubscriberMethodAttribute>(const ACategory: string): TSubscriptions;
-    procedure InvokeSubscriber(ASubscription: TSubscription; const Args: array of TValue);
-    function IsRegistered<T: TSubscriberMethodAttribute>(ASubscriber: TObject): Boolean;
-    procedure RegisterSubscriber<T: TSubscriberMethodAttribute>(ASubscriber: TObject; ARaiseExcIfEmpty: Boolean);
-    function RemoveSubscription<T: TSubscriberMethodAttribute>(ASubscriber: TObject; const ACategory: string): TSubscription;
-    procedure Subscribe<T: TSubscriberMethodAttribute>(ASubscriber: TObject; ASubscriberMethod: TSubscriberMethod);
-    function TryGetSubscriberCategories<T: TSubscriberMethodAttribute>(const ASubscriber: TObject; out ACategories: TMethodCategories): Boolean;
-    function TryGetCategorizedSubscriptions<T: TSubscriberMethodAttribute>(const ACategory: string; out ASubscriptions: TSubscriptions): Boolean;
-    procedure UnregisterSubscriber<T: TSubscriberMethodAttribute>(ASubscriber: TObject);
-    procedure Unsubscribe<T: TSubscriberMethodAttribute>(ASubscriber: TObject; const AMethodCategory: TMethodCategory);
+    FSubscriberToCategoriesByAttrName: TSubscriberToCategoriesByAttributeName;
+  strict private
+
+    /// <summary>
+    ///   Retrieves the subscriptions that belong to the specified category, while matching the specified
+    ///   subscriber attribute. If the category currently does not have any subscriptions belonging to to
+    ///   it, a new subscribers list will be created and returned.
+    /// </summary>
+    /// <typeparam name="T">
+    ///   The subscriber attribute
+    /// </typeparam>
+    /// <param name="ACategory">
+    ///   The category.
+    /// </param>
+    /// <returns>
+    ///   The subscriptions belonging to the category and matching the subscriber attribute.
+    /// </returns>
+    function GetCreateSubscriptions<T: TSubscriberAttribute>(const ACategory: string): TSubscriptions;
+
+    /// <summary>
+    ///   Retrieves the categories associated with the subscriber object, while matching the specified
+    ///   subscriber attribute. If there is no existing categories for the subscriber, a new categories
+    ///   list will be created and returned.
+    /// </summary>
+    /// <typeparam name="T">
+    ///   The subscriber attribute
+    /// </typeparam>
+    /// <param name="ASubscriber">
+    ///   The subscriber object
+    /// </param>
+    /// <returns>
+    ///   The categories associated with the subscriber object, while matching the attribute.
+    /// </returns>
+    function GetCreateCategories<T: TSubscriberAttribute>(const ASubscriber: TObject): TCategories;
+
+    /// <summary>
+    ///   Retrieves the categories associated with the subscriber object.
+    /// </summary>
+    /// <param name="ASubscriber">
+    ///   The subscriber object
+    /// </param>
+    /// <param name="ACategories">
+    ///   The retrieved categories. Nil will be returned if the subscriber does not have any existing
+    ///   categoreis.
+    /// </param>
+    /// <returns>
+    ///   Returns True if retrieved successfully, False otherwise.
+    /// </returns>
+    function TryGetCategories<T: TSubscriberAttribute>(const ASubscriber: TObject; out ACategories: TCategories): Boolean;
+
+
+    /// <summary>
+    ///   Retrieves all subscriptions (that may come from different subscriber objects) belonging to the
+    ///   specified category.
+    /// </summary>
+    /// <typeparam name="T">
+    ///   The subscriber attribute.
+    /// </typeparam>
+    /// <param name="ACategory">
+    ///   The category for which subscriptions are to be retrieved.
+    /// </param>
+    /// <param name="ASubscriptions">
+    ///   Retrieved subscriptions. Nil will be returned if there is not existing subscriptions for the
+    ///   specified category.
+    /// </param>
+    /// <returns>
+    ///   Returns True if retrieves successfully, False otherwise.
+    /// </returns>
+    function TryGetSubscriptions<T: TSubscriberAttribute>(const ACategory: string; out ASubscriptions: TSubscriptions): Boolean;
+
+    /// <summary>
+    ///   Checks if the specified subscriber object has been registered.
+    /// </summary>
+    /// <typeparam name="T">
+    ///   Subscriber attribute.
+    /// </typeparam>
+    /// <param name="ASubscriber">
+    ///   The subscriber object to check.
+    /// </param>
+    /// <returns>
+    ///   Returns True if already registered, False otherwise.
+    /// </returns>
+    function IsRegistered<T: TSubscriberAttribute>(ASubscriber: TObject): Boolean;
+
+    /// <summary>
+    ///   Registers the specified subscriber object.
+    /// </summary>
+    /// <param name="ASubscriber">
+    ///   The subscriber object.
+    /// </param>
+    /// <param name="ARaiseExcIfEmpty">
+    ///   If True, exception will be raised when the subscriber object does not have any subscriber
+    ///   methods.
+    /// </param>
+    /// <exception cref="EObjectHasNoSubscriberMethods">
+    ///   If the subscriber object does not have any subscriber methods.
+    /// </exception>
+    procedure DoRegister<T: TSubscriberAttribute>(ASubscriber: TObject; ARaiseExcIfEmpty: Boolean);
+
+    /// <summary>
+    ///   Subscribes the specific method for the subscriber object.
+    /// </summary>
+    procedure DoSubscribe<T: TSubscriberAttribute>(ASubscriber: TObject; ASubscriberMethod: TSubscriberMethod);
+
+    /// <summary>
+    ///   Unregisters the subscriber object.
+    /// </summary>
+    procedure DoUnregister<T: TSubscriberAttribute>(ASubscriber: TObject);
+
+    /// <summary>
+    ///   Unsubscribes the specific event category for the subscriber object.
+    /// </summary>
+    function DoUnsubscribe<T: TSubscriberAttribute>(ASubscriber: TObject; const ACategory: TCategory): TSubscription;
+
+    procedure InvokeSubscriber(ASubscription: TSubscription; const AParams: array of TValue);
+    procedure Post(ASubscription: TSubscription; const AMessage: string; AIsMainThread: Boolean); overload;
+    procedure Post(ASubscription: TSubscription; const AEvent: IInterface; AIsMainThread: Boolean); overload;
+
     {$REGION'IEventBus interface methods'}
     function IsRegisteredForChannels(ASubscriber: TObject): Boolean;
     function IsRegisteredForEvents(ASubscriber: TObject): Boolean;
     procedure Post(const AChannel: string; const AMessage: string); overload;
     procedure Post(const AEvent: IInterface; const AContext: string = ''); overload;
-    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext: string; const ANewContext: string);
+    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: string);
     procedure RegisterSubscriberForChannels(ASubscriber: TObject);
     procedure SilentRegisterSubscriberForChannels(ASubscriber: TObject);
     procedure RegisterSubscriberForEvents(ASubscriber: TObject);
@@ -88,9 +193,6 @@ type
     procedure UnregisterForChannels(ASubscriber: TObject);
     procedure UnregisterForEvents(ASubscriber: TObject);
     {$ENDREGION}
-  strict protected
-    procedure PostToChannel(ASubscription: TSubscription; const AMessage: string; AIsMainThread: Boolean); virtual;
-    procedure PostToSubscription(ASubscription: TSubscription; const AEvent: IInterface; AIsMainThread: Boolean); virtual;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -99,8 +201,8 @@ type
 constructor TEventBus.Create;
 begin
   inherited Create;
-  FCategoryToSubscriptionsByAttrName := TMethodCategoryToSubscriptionsByAttributeName.Create([doOwnsValues]);
-  FSubscriberToCategoriesByAttrName := TSubscriberToMethodCategoriesByAttributeName.Create([doOwnsValues]);
+  FCategoryToSubscriptionsByAttrName := TCategoryToSubscriptionsByAttributeName.Create([doOwnsValues]);
+  FSubscriberToCategoriesByAttrName := TSubscriberToCategoriesByAttributeName.Create([doOwnsValues]);
 end;
 
 destructor TEventBus.Destroy;
@@ -110,28 +212,14 @@ begin
   inherited;
 end;
 
-procedure TEventBus.DeleteSubscriber<T>(ASubscriber: TObject);
+function TEventBus.GetCreateCategories<T>(const ASubscriber: TObject): TCategories;
 begin
   var LAttrName := T.ClassName;
-  var LSubscriberToCategoriesMap: TSubscriberToMethodCategoriesMap;
-
-  if FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then
-  begin
-    LSubscriberToCategoriesMap := FSubscriberToCategoriesByAttrName[LAttrName];
-
-    if LSubscriberToCategoriesMap.ContainsKey(ASubscriber) then
-      LSubscriberToCategoriesMap.Remove(ASubscriber);
-  end;
-end;
-
-function TEventBus.GetCreateSubscriberCategories<T>(const ASubscriber: TObject): TMethodCategories;
-begin
-  var LAttrName := T.ClassName;
-  var LSubsToCatsMap: TSubscriberToMethodCategoriesMap;
+  var LSubsToCatsMap: TSubscriberToCategoriesMap;
 
   if not FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then
   begin
-    LSubsToCatsMap := TSubscriberToMethodCategoriesMap.Create([doOwnsValues]);
+    LSubsToCatsMap := TSubscriberToCategoriesMap.Create([doOwnsValues]);
     FSubscriberToCategoriesByAttrName.Add(LAttrName, LSubsToCatsMap);
   end else
   begin
@@ -140,19 +228,19 @@ begin
 
   if (not LSubsToCatsMap.TryGetValue(ASubscriber, Result)) then
   begin
-    Result := TMethodCategories.Create;
+    Result := TCategories.Create;
     LSubsToCatsMap.Add(ASubscriber, Result);
   end;
 end;
 
-function TEventBus.GetCreateCategorizedSubscriptions<T>(const ACategory: string): TSubscriptions;
+function TEventBus.GetCreateSubscriptions<T>(const ACategory: string): TSubscriptions;
 begin
   var LAttrName := T.ClassName;
-  var LCatToSubsMap: TMethodCategoryToSubscriptionsMap;
+  var LCatToSubsMap: TCategoryToSubscriptionsMap;
 
   if not FCategoryToSubscriptionsByAttrName.ContainsKey(LAttrName) then
   begin
-    LCatToSubsMap := TMethodCategoryToSubscriptionsMap.Create([doOwnsValues]);
+    LCatToSubsMap := TCategoryToSubscriptionsMap.Create([doOwnsValues]);
     FCategoryToSubscriptionsByAttrName.Add(LAttrName, LCatToSubsMap);
   end else
   begin
@@ -181,13 +269,13 @@ begin
   end;
 end;
 
-procedure TEventBus.InvokeSubscriber(ASubscription: TSubscription; const Args: array of TValue);
+procedure TEventBus.InvokeSubscriber(ASubscription: TSubscription; const AParams: array of TValue);
 begin
   try
     if not ASubscription.Active then
       Exit;
 
-    ASubscription.SubscriberMethod.Method.Invoke(ASubscription.Subscriber, Args);
+    ASubscription.SubscriberMethod.Method.Invoke(ASubscription.Subscriber, AParams);
   except
     on E: Exception do
     begin
@@ -209,12 +297,12 @@ begin
 
   try
     var LAttrName := T.ClassName;
-    var LSubscriberToCategoriesMap: TSubscriberToMethodCategoriesMap;
+    var LSubscriberToCatsMap: TSubscriberToCategoriesMap;
 
-    if not FSubscriberToCategoriesByAttrName.TryGetValue(LAttrName, LSubscriberToCategoriesMap) then
+    if not FSubscriberToCategoriesByAttrName.TryGetValue(LAttrName, LSubscriberToCatsMap) then
       Exit(False);
 
-    Result := LSubscriberToCategoriesMap.ContainsKey(ASubscriber);
+    Result := LSubscriberToCatsMap.ContainsKey(ASubscriber);
   finally
     FMrewSync.EndRead;
   end;
@@ -236,7 +324,9 @@ begin
 
   try
     var LSubscriptions: TSubscriptions;
-    if not TryGetCategorizedSubscriptions<ChannelAttribute>(TSubscriberMethod.EncodeCategory(AChannel), LSubscriptions) then
+    var LCategory := TSubscriberMethod.EncodeCategory(AChannel);
+
+    if not TryGetSubscriptions<ChannelAttribute>(LCategory, LSubscriptions) then
       Exit;
 
     for var LSubscription in LSubscriptions do
@@ -245,7 +335,7 @@ begin
         Continue;
 
       var LIsMainThread := MainThreadID = TThread.CurrentThread.ThreadID;
-      PostToChannel(LSubscription, AMessage, LIsMainThread);
+      Post(LSubscription, AMessage, LIsMainThread);
     end;
   finally
     FMrewSync.EndRead;
@@ -258,9 +348,10 @@ begin
 
   try
     var LEventType:= TInterfaceHelper.GetQualifiedName(AEvent);
+    var LCategory := TSubscriberMethod.EncodeCategory(AContext, LEventType);
     var LSubscriptions: TSubscriptions;
 
-    if not TryGetCategorizedSubscriptions<SubscribeAttribute>(TSubscriberMethod.EncodeCategory(AContext, LEventType), LSubscriptions) then
+    if not TryGetSubscriptions<SubscribeAttribute>(LCategory, LSubscriptions) then
       Exit;
 
     for var LSubscription in LSubscriptions do
@@ -269,14 +360,14 @@ begin
         Continue;
 
       var LIsMainThread := MainThreadID = TThread.CurrentThread.ThreadID;
-      PostToSubscription(LSubscription, AEvent, LIsMainThread);
+      Post(LSubscription, AEvent, LIsMainThread);
     end;
   finally
     FMrewSync.EndRead;
   end;
 end;
 
-procedure TEventBus.PostToChannel(ASubscription: TSubscription; const AMessage: string; AIsMainThread: Boolean);
+procedure TEventBus.Post(ASubscription: TSubscription; const AMessage: string; AIsMainThread: Boolean);
 begin
   if not Assigned(ASubscription.Subscriber) then
     Exit;
@@ -310,7 +401,7 @@ begin
   end;
 end;
 
-procedure TEventBus.PostToSubscription(ASubscription: TSubscription; const AEvent: IInterface; AIsMainThread: Boolean);
+procedure TEventBus.Post(ASubscription: TSubscription; const AEvent: IInterface; AIsMainThread: Boolean);
 begin
   if not Assigned(ASubscription.Subscriber) then
     Exit;
@@ -344,39 +435,45 @@ begin
   end;
 end;
 
-procedure TEventBus.RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext: string; const ANewContext: string);
-const
-  sSubscriberHasNRE = 'Subscruber has null reference.';
-  sNoMatchedSubscription = 'No existing subscription that matches the old context [%s] and the event type [%s].';
+procedure TEventBus.RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: string);
 begin
   FMrewSync.BeginWrite;
 
   try
     if not Assigned(ASubscriber) then
-      raise EArgumentException.Create(sSubscriberHasNRE);
+      raise EArgumentException.Create('Subscruber has null reference.');
 
     var LEventName := TInterfaceHelper.GetQualifiedName(AEvent);
-    var LCategory := TSubscriberMethod.EncodeCategory(AOldContext, LEventName);
-    var LRemovedSubscription := RemoveSubscription<SubscribeAttribute>(ASubscriber, LCategory);
+    var LOldCategory := TSubscriberMethod.EncodeCategory(AOldContext, LEventName);
+    var LOldSubscription := DoUnsubscribe<SubscribeAttribute>(ASubscriber, LOldCategory);
 
-    if LRemovedSubscription = nil then
-      raise EArgumentException.CreateFmt(sNoMatchedSubscription, [AOldContext, LEventName]);
+    if Assigned(LOldSubscription) then
+    begin
+      var LCategories: TCategories;
+      if TryGetCategories<SubscribeAttribute>(ASubscriber, LCategories) then
+        LCategories.Remove(LOldCategory);
+    end else
+    begin
+      raise EArgumentException.CreateFmt('Subscriber [%s] does not have subscription belonging to category [%s].',
+        [ASubscriber.ClassName, LOldCategory]);
+    end;
 
     try
-      with LRemovedSubscription.SubscriberMethod do
+      with LOldSubscription.SubscriberMethod do
       begin
         var LNewSubMethod := TSubscriberMethod.Create(Method, EventType, ThreadMode, ANewContext, Priority);
-        Subscribe<SubscribeAttribute>(ASubscriber, LNewSubMethod);
+        // Possibly throws ESubscriberMethodAlreadyRegistered
+        DoSubscribe<SubscribeAttribute>(ASubscriber, LNewSubMethod);
       end;
     finally
-      LRemovedSubscription.Free;
+      LOldSubscription.Free;
     end;
   finally
     FMrewSync.EndWrite;
   end;
 end;
 
-procedure TEventBus.RegisterSubscriber<T>(ASubscriber: TObject; ARaiseExcIfEmpty: Boolean);
+procedure TEventBus.DoRegister<T>(ASubscriber: TObject; ARaiseExcIfEmpty: Boolean);
 begin
   FMrewSync.BeginWrite;
 
@@ -385,7 +482,7 @@ begin
     var LSubscriberMethods := TSubscribersFinder.FindSubscriberMethods<T>(LSubscriberClass, ARaiseExcIfEmpty);
 
     for var LSubscriberMethod in LSubscriberMethods do
-      Subscribe<T>(ASubscriber, LSubscriberMethod);
+      DoSubscribe<T>(ASubscriber, LSubscriberMethod);
   finally
     FMrewSync.EndWrite;
   end;
@@ -393,56 +490,28 @@ end;
 
 procedure TEventBus.RegisterSubscriberForChannels(ASubscriber: TObject);
 begin
-  RegisterSubscriber<ChannelAttribute>(ASubscriber, True);
+  DoRegister<ChannelAttribute>(ASubscriber, True);
 end;
 
 procedure TEventBus.RegisterSubscriberForEvents(ASubscriber: TObject);
 begin
-  RegisterSubscriber<SubscribeAttribute>(ASubscriber, True);
-end;
-
-function TEventBus.RemoveSubscription<T>(ASubscriber: TObject; const ACategory: string): TSubscription;
-begin
-  Result := nil;
-  var LSubscriptions: TSubscriptions;
-
-  if not TryGetCategorizedSubscriptions<T>(ACategory, LSubscriptions) then
-    Exit;
-
-  for var LSubscription in LSubscriptions do
-  begin
-    if LSubscription.Subscriber = ASubscriber then
-    begin
-      Result := LSubscriptions.Extract(LSubscription); // Found!
-      Break;
-    end
-  end;
-
-  if Assigned(Result) then
-  begin
-    Unsubscribe<T>(ASubscriber, ACategory);
-    Result.Active := False;
-  end;
-
-  var LCategories: TMethodCategories;
-  if TryGetSubscriberCategories<T>(ASubscriber, LCategories) then
-    LCategories.Remove(ACategory);
+  DoRegister<SubscribeAttribute>(ASubscriber, True);
 end;
 
 procedure TEventBus.SilentRegisterSubscriberForChannels(ASubscriber: TObject);
 begin
-  RegisterSubscriber<ChannelAttribute>(ASubscriber, False);
+  DoRegister<ChannelAttribute>(ASubscriber, False);
 end;
 
 procedure TEventBus.SilentRegisterSubscriberForEvents(ASubscriber: TObject);
 begin
-  RegisterSubscriber<SubscribeAttribute>(ASubscriber, False);
+  DoRegister<SubscribeAttribute>(ASubscriber, False);
 end;
 
-procedure TEventBus.Subscribe<T>(ASubscriber: TObject; ASubscriberMethod: TSubscriberMethod);
+procedure TEventBus.DoSubscribe<T>(ASubscriber: TObject; ASubscriberMethod: TSubscriberMethod);
 begin
   var LCategory := ASubscriberMethod.Category; // Category = Context:EventType
-  var LSubscriptions := GetCreateCategorizedSubscriptions<T>(LCategory);
+  var LSubscriptions := GetCreateSubscriptions<T>(LCategory);
   var LNewSubscription := TSubscription.Create(ASubscriber, ASubscriberMethod);
 
   if not LSubscriptions.Contains(LNewSubscription) then
@@ -451,17 +520,19 @@ begin
   end else
   begin
     LNewSubscription.Free;
-    raise ESubscriberMethodAlreadyRegistered.CreateFmt('Subscriber [%s] already registered to %s.', [ASubscriber.ClassName, LCategory]);
+    raise ESubscriberMethodAlreadyRegistered.CreateFmt(
+      'Subscriber [%s] already registered to %s.',
+      [ASubscriber.ClassName, LCategory]);
   end;
 
-  GetCreateSubscriberCategories<T>(ASubscriber).Add(LCategory);
+  GetCreateCategories<T>(ASubscriber).Add(LCategory);
 end;
 
-function TEventBus.TryGetSubscriberCategories<T>(const ASubscriber: TObject; out ACategories: TMethodCategories): Boolean;
+function TEventBus.TryGetCategories<T>(const ASubscriber: TObject; out ACategories: TCategories): Boolean;
 begin
   ACategories := nil;
   var LAttrName := T.ClassName;
-  var LSubscriberToCategoriesMap: TSubscriberToMethodCategoriesMap;
+  var LSubscriberToCategoriesMap: TSubscriberToCategoriesMap;
 
   if FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then
   begin
@@ -474,10 +545,10 @@ begin
   Result := Assigned(ACategories);
 end;
 
-function TEventBus.TryGetCategorizedSubscriptions<T>(const ACategory: string; out ASubscriptions: TSubscriptions): Boolean;
+function TEventBus.TryGetSubscriptions<T>(const ACategory: string; out ASubscriptions: TSubscriptions): Boolean;
 begin
   var LAttrName := T.ClassName;
-  var LCatToSubsMap: TMethodCategoryToSubscriptionsMap;
+  var LCatToSubsMap: TCategoryToSubscriptionsMap;
   ASubscriptions := nil;
 
   if FCategoryToSubscriptionsByAttrName.ContainsKey(LAttrName) then
@@ -493,49 +564,64 @@ end;
 
 procedure TEventBus.UnregisterForChannels(ASubscriber: TObject);
 begin
-  UnregisterSubscriber<ChannelAttribute>(ASubscriber);
+  DoUnregister<ChannelAttribute>(ASubscriber);
 end;
 
 procedure TEventBus.UnregisterForEvents(ASubscriber: TObject);
 begin
-  UnregisterSubscriber<SubscribeAttribute>(ASubscriber);
+  DoUnregister<SubscribeAttribute>(ASubscriber);
 end;
 
-procedure TEventBus.UnregisterSubscriber<T>(ASubscriber: TObject);
+procedure TEventBus.DoUnregister<T>(ASubscriber: TObject);
 begin
   FMrewSync.BeginWrite;
 
   try
-    var LCategories: TMethodCategories;
-
-    if TryGetSubscriberCategories<T>(ASubscriber, LCategories) then
+    var LCategories: TCategories;
+    if TryGetCategories<T>(ASubscriber, LCategories) then
+    begin
       for var LCategory in LCategories do
-        Unsubscribe<T>(ASubscriber, LCategory);
+      begin
+        var LSubscription := DoUnsubscribe<T>(ASubscriber, LCategory);
+        if Assigned(LSubscription) then
+          LSubscription.Free;
+      end;
+    end;
 
-    DeleteSubscriber<T>(ASubscriber);
+    {$REGION 'Remove Subscriber'}
+    var LAttrName := T.ClassName;
+    var LSubscriberToCatsMap: TSubscriberToCategoriesMap;
+
+    if FSubscriberToCategoriesByAttrName.ContainsKey(LAttrName) then
+    begin
+      LSubscriberToCatsMap := FSubscriberToCategoriesByAttrName[LAttrName];
+
+      if LSubscriberToCatsMap.ContainsKey(ASubscriber) then
+        LSubscriberToCatsMap.Remove(ASubscriber);
+    end;
+    {$ENDREGION}
   finally
     FMrewSync.EndWrite;
   end;
 end;
 
-procedure TEventBus.Unsubscribe<T>(ASubscriber: TObject; const AMethodCategory: TMethodCategory);
+function TEventBus.DoUnsubscribe<T>(ASubscriber: TObject; const ACategory: TCategory): TSubscription;
 begin
+  Result := nil;
+
   var LSubscriptions: TObjectList<TSubscription>;
-  if not TryGetCategorizedSubscriptions<T>(AMethodCategory, LSubscriptions) then
+  if not TryGetSubscriptions<T>(ACategory, LSubscriptions) then
     Exit;
 
-  if (LSubscriptions.Count < 1) then
-    Exit;
-
-  for var I := LSubscriptions.Count - 1 downto 0 do
+  for var LSubscription in LSubscriptions do
   begin
-    var LSubscription := LSubscriptions[I];
-    // Note - If the subscriber has been freed without unregistering itself, calling
-    // LSubscription.Subscriber.Equals() will cause Access Violation, hence use '=' instead.
+    // If the subscriber has been freed without unregistering itself, calling LSubscription.Subscriber.Equals
+    // will cause access violation, hence we use '=' here instead.
     if LSubscription.Subscriber = ASubscriber then
     begin
-      LSubscription.Active := False;
-      LSubscriptions.Delete(I);
+      Result := LSubscriptions.Extract(LSubscription);
+      Result.Active := False;
+      Break;
     end;
   end;
 end;

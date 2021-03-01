@@ -191,7 +191,7 @@ type
     ///   Throws when a null subscriber is specified, or there is no existing subscription that matches the
     ///   event type and old context.
     /// </exception>
-    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext: string; const ANewContext: string);
+    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: string);
   end;
 
 type
@@ -276,7 +276,7 @@ type
   );
 
 type
-  TSubscriberMethodAttribute = class abstract (TCustomAttribute)
+  TSubscriberAttribute = class abstract (TCustomAttribute)
   strict private
     FContext: string;
     FThreadMode: TThreadMode;
@@ -312,7 +312,7 @@ type
   ///   Subscriber attribute must be specified to subscriber methods in
   ///   order to receive interface-typed events.
   /// </summary>
-  SubscribeAttribute = class(TSubscriberMethodAttribute)
+  SubscribeAttribute = class(TSubscriberAttribute)
   strict protected
     function Get_ArgTypeKind: TTypeKind; override;
   public
@@ -323,7 +323,7 @@ type
   ///   Channel attribute must be specified to subscriber methods in order
   ///   to receive named-channel messages.
   /// </summary>
-  ChannelAttribute = class(TSubscriberMethodAttribute)
+  ChannelAttribute = class(TSubscriberAttribute)
   strict private
     function Get_Channel: string;
   strict protected
@@ -457,7 +457,7 @@ begin
   Result := Context;
 end;
 
-constructor TSubscriberMethodAttribute.Create(AThreadMode: TThreadMode; const AContext: string);
+constructor TSubscriberAttribute.Create(AThreadMode: TThreadMode; const AContext: string);
 begin
   inherited Create;
   FContext := AContext;

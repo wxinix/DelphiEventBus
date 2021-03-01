@@ -55,7 +55,8 @@ type
     /// <param name="APriority">
     ///   Dispatching priority of the method.
     /// </param>
-    constructor Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode; const AContext: string = ''; APriority: Integer = 1);
+    constructor Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode;
+      const AContext: string = ''; APriority: Integer = 1);
 
     /// <summary>
     ///   Encodes Context string and EventType string to a Category string,
@@ -85,20 +86,24 @@ type
     ///   Context of the subscriber method.
     /// </summary>
     property Context: string read FContext;
+
     /// <summary>
     ///   Event type of the subscriber method. It is actually the fully
     ///   qualified name of the event type.
     /// </summary>
     property EventType: string read FEventType;
+
     /// <summary>
     ///   Rtti information of the subscriber method.
     /// </summary>
     property Method: TRttiMethod read FMethod;
+
     /// <summary>
     ///   Dispatching priority of the subscriber method. Currently a placeholder
     ///   with no impact on actual event dispatching.
     /// </summary>
     property Priority: Integer read FPriority;
+
     /// <summary>
     ///   Thread mode of the subscriber method.
     /// </summary>
@@ -176,7 +181,8 @@ type
     ///   Subscribe or Channel attribute specified, and ARaiseExcIfEmpty is
     ///   True.
     /// </exception>
-    class function FindSubscriberMethods<T: TSubscriberMethodAttribute>(ASubscriberClass: TClass; ARaiseExcIfEmpty: Boolean = False): TArray<TSubscriberMethod>;
+    class function FindSubscriberMethods<T: TSubscriberAttribute>(ASubscriberClass: TClass;
+      ARaiseExcIfEmpty: Boolean = False): TArray<TSubscriberMethod>;
   end;
 
 implementation
@@ -184,7 +190,8 @@ implementation
 uses
   System.SysUtils, System.TypInfo, EventBus.Helpers;
 
-constructor TSubscriberMethod.Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode; const AContext: string = ''; APriority: Integer = 1);
+constructor TSubscriberMethod.Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode;
+  const AContext: string = ''; APriority: Integer = 1);
 begin
   FMethod := ARttiMethod;
   FEventType := AEventType;
@@ -193,7 +200,8 @@ begin
   FPriority := APriority;
 end;
 
-class function TSubscriberMethod.EncodeCategory(const AContext: string; const AEventType: string = 'System.string'): string;
+class function TSubscriberMethod.EncodeCategory(const AContext: string;
+  const AEventType: string = 'System.string'): string;
 begin
   Result := Format('%s:%s', [AContext, AEventType]);
 end;
@@ -206,8 +214,8 @@ begin
   if (inherited Equals(AObject)) then
     Exit(True);
 
-  var LOtherSubscriberMethod := TSubscriberMethod(AObject);
-  Result := (LOtherSubscriberMethod.Method.Tostring = Method.Tostring) and (LOtherSubscriberMethod.EventType = EventType);
+  var LOther := TSubscriberMethod(AObject);
+  Result := (LOther.Method.Tostring = Method.Tostring) and (LOther.EventType = EventType);
 end;
 
 function TSubscriberMethod.Get_Category: string;
@@ -215,7 +223,8 @@ begin
   Result := EncodeCategory(Context, EventType);
 end;
 
-class function TSubscribersFinder.FindSubscriberMethods<T>(ASubscriberClass: TClass; ARaiseExcIfEmpty: Boolean = False): TArray<TSubscriberMethod>;
+class function TSubscribersFinder.FindSubscriberMethods<T>(ASubscriberClass: TClass;
+  ARaiseExcIfEmpty: Boolean = False): TArray<TSubscriberMethod>;
 begin
   Result := [];
 
@@ -224,30 +233,29 @@ begin
 
   for var LMethod in LRttiMethods do
   begin
-    var LAttribute: T;
+    var LAttr: T;
 
-    if LMethod.TryGetAttribute<T>(LAttribute) then
+    if LMethod.TryGetAttribute<T>(LAttr) then
     begin
       var LParamsLength := Length(LMethod.GetParameters);
 
-      if (LParamsLength <> 1) or (LMethod.GetParameters[0].ParamType.TypeKind <> LAttribute.ArgTypeKind) then
+      if (LParamsLength <> 1) or (LMethod.GetParameters[0].ParamType.TypeKind <> LAttr.ArgTypeKind) then
       begin
         raise EInvalidSubscriberMethod.CreateFmt(
           'Method %s.%s has attribute %s with %d argument(s) and argument[0] is of type %s.' +
           'Only 1 argument allowed and that argument must be of %s type.',
           [
             ASubscriberClass.ClassName,
-            LAttribute.ClassName,
+            LAttr.ClassName,
             LMethod.Name,
             LParamsLength,
             LMethod.GetParameters[0].ParamType.Name,
-            TRttiEnumerationType.GetName(LAttribute.ArgTypeKind)
+            TRttiEnumerationType.GetName(LAttr.ArgTypeKind)
           ]);
       end;
 
       var LEventType := LMethod.GetParameters[0].ParamType.QualifiedName;
-      var LSubMethod := TSubscriberMethod.Create(LMethod, LEventType, LAttribute.ThreadMode, LAttribute.Context);
-
+      var LSubMethod := TSubscriberMethod.Create(LMethod, LEventType, LAttr.ThreadMode, LAttr.Context);
       Result := Result + [LSubMethod];
     end;
   end;
@@ -277,14 +285,12 @@ begin
 end;
 
 function TSubscription.Equals(AObject: TObject): Boolean;
-var
-  LOtherSubscription: TSubscription;
 begin
   if not (AObject is TSubscription) then
     Exit(False);
 
-  LOtherSubscription := TSubscription(AObject);
-  Result := (Subscriber = LOtherSubscription.Subscriber) and (SubscriberMethod.Equals(LOtherSubscription.SubscriberMethod));
+  var LOther := TSubscription(AObject);
+  Result := (Subscriber = LOther.Subscriber) and (SubscriberMethod.Equals(LOther.SubscriberMethod));
 end;
 
 procedure TSubscription.Set_Active(const AValue: Boolean);
