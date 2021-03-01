@@ -1,57 +1,52 @@
-{***************************************************************************
+{****************************************************************************************
            DUnitX Copyright (C) 2015 Vincent Parrett & Contributors
-
            vincent@finalbuilder.com
            http://www.finalbuilder.com
 
-***************************************************************************
+*****************************************************************************************
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+Licensed under the Apache License Version 2.0 (the "License"); you may not use this  file
+except in compliance with the License. You may obtain a copy of the  License at
 
       http://www.apache.org/licenses/LICENSE-2.0
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+Unless required by applicable law or agreed to in writing, software distributed under the
+License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied.See the License for the specific language governing permissions
+and limitations under the License.
 
-***************************************************************************
+******************************************************************************************
+Portions of the file also fall under the following license  as they were taken from  the
+DSharp Project
 
- Portions of the file also fall under the following license
- as they were taken from the DSharp Project
- https://bitbucket.org/sglienke/dsharp
+          https://bitbucket.org/sglienke/dsharp
+          Copyright (c) 2011-2012, Stefan Glienke
+          All rights reserved.
 
+Redistribution and use in source and binary forms,  with  or without  modification, are
+permitted provided that the following conditions are met:
 
-  Copyright (c) 2011-2012, Stefan Glienke
-  All rights reserved.
+- Redistributions of source code must retain the above copyright notice,  this list  of
+  conditions and the following disclaimer.
 
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
+- Redistributions in binary form must reproduce the above copyright  notice,  this  list
+  of conditions and the following disclaimer in the documentation and/or other materials
+  provided with the distribution.
 
-  - Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
-  - Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
-  - Neither the name of this library nor the names of its contributors may be
-    used to endorse or promote products derived from this software without
-    specific prior written permission.
+- Neither the name of this library nor  the  names of its contributors  may  be used  to
+  endorse or promote products derived from this software without specific prior  written
+  permission.
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-  POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************}
+THIS SOFTWARE IS PROVIDED  BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS  "AS IS"  AND  ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE  IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE  ARE DISCLAIMED.  IN NO EVENT SHALL
+THE  COPYRIGHT HOLDER  OR  CONTRIBUTORS  BE  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+OF SUBSTITUTE GOODS OR SERVICES;LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING  IN  ANY  WAY  OUT OF THE  USE  OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+****************************************************************************************}
 
 unit EventBus.Helpers;
 
@@ -355,10 +350,34 @@ type
     function GetMethodCount: Integer;
     function InheritsFrom(OtherType: PTypeInfo): Boolean;
   public
+    /// <summary>
+    ///   Retrieves all attributes that of type T and its derived classes, specified on the current class
+    ///   and its immediate base class.
+    /// </summary>
     function FindAttributes<T: TCustomAttribute>: TArray<T>;
+
+    /// <summary>
+    ///   Retrieves the generic type arguments.
+    /// </summary>
     function GetGenericArguments: TArray<TRttiType>;
+
+    /// <summary>
+    ///   Get the generic type definition of the type. Generic type parameters will be replaced as T, T0,
+    ///   T1, etc.
+    /// </summary>
     function GetGenericTypeDefinition(const AIncludeUnitName: Boolean = True): string;
 
+    /// <summary>
+    ///   Retrieves a class member (field, property or method) by the specified name. First searches
+    ///   properties, then fields, and lastly methods to get the member that matches the name. The first
+    ///   found will be returned.
+    /// </summary>
+    /// <param name="AName">
+    ///   Name of the member.
+    /// </param>
+    /// <returns>
+    ///   The member found. If not found, nil will be returned.
+    /// </returns>
     function GetMember(const AName: string): TRttiMember;
 
     ///	<summary>
@@ -369,8 +388,25 @@ type
     ///	  Code address of the method to find
     ///	</param>
     function GetMethod(ACodeAddress: Pointer): TRttiMethod; overload;
+
+    /// <summary>
+    ///   Retrieves the property by the specified name.
+    /// </summary>
+    /// <param name="AName">
+    ///   Property name to search.
+    /// </param>
+    /// <returns>
+    ///   The property found. If not found, nil will be returned.
+    /// </returns>
     function GetProperty(const AName: string): TRttiProperty;
 
+    /// <summary>
+    ///   Get the declared parameter-less constructor of the current class. The first found will be
+    ///   returned.
+    /// </summary>
+    /// <returns>
+    ///   The constructor found. If not found, nil will be returned.
+    /// </returns>
     function GetStandardConstructor: TRttiMethod;
 
     function IsCovariantTo(AOtherClass: TClass): Boolean; overload;
@@ -429,9 +465,27 @@ type
     ///	</param>
     function TryGetMethod(const AName: string; out AMethod: TRttiMethod): Boolean; overload;
 
-    //will get the first declated constructor it finds
+    /// <summary>
+    ///   Retrieves the parameter-less constructor by first searching the subject type then its parent
+    ///   classes. The first found will be returned.
+    /// </summary>
+    /// <param name="AMethod">
+    ///   The constructor found.
+    /// </param>
+    /// <returns>
+    ///   True indicates success, False otherwise.
+    /// </returns>
     function TryGetConstructor(out AMethod : TRttiMethod) : Boolean;
 
+    /// <summary>
+    ///   Retrieves the destructor declared by the current class.
+    /// </summary>
+    /// <param name="AMethod">
+    ///   The destructor found.
+    /// </param>
+    /// <returns>
+    ///   True indicates success, False otherwise.
+    /// </returns>
     function TryGetDestructor(out AMethod : TRttiMethod) : Boolean;
 
     ///	<summary>
@@ -446,8 +500,15 @@ type
     ///	</param>
     function TryGetProperty(const AName: string; out AProperty: TRttiProperty): Boolean;
 
+    /// <summary>
+    ///   Retrieves the parameter-less constructor declared by the current class. The first one found will
+    ///   be returned.
+    /// </summary>
+    /// <returns>
+    ///   True indicates success, False otherwise. <br />
+    /// </returns>
     function TryGetStandardConstructor(out AMethod: TRttiMethod): Boolean;
-
+  public
     property AsInterface: TRttiInterfaceType read GetAsInterface;
     property IsInterface: Boolean read GetIsInterface;
     property MethodCount: Integer read GetMethodCount;
@@ -663,14 +724,12 @@ type
     /// <summary>
     ///   Performs a call to the described method.
     /// </summary>
-    class function InvokeMethod(const AIntf: IInterface; const AMethodName: string;
-      const Args: array of TValue): TValue; overload; static;
+    class function InvokeMethod(const AIntf: IInterface; const AMethodName: string; const Args: array of TValue): TValue; overload; static;
 
     /// <summary>
     ///   Performs a call to the described method.
     /// </summary>
-    class function InvokeMethod(const AIntfInTValue: TValue; const AMethodName: string;
-      const Args: array of TValue): TValue; overload; static;
+    class function InvokeMethod(const AIntfInTValue: TValue; const AMethodName: string; const Args: array of TValue): TValue; overload; static;
   end;
 
 type
@@ -1877,7 +1936,9 @@ begin
   else
     LStr := Name;
 
-  Result := LStr.SubString(0, LStr.IndexOf('<') + 1) + MergeStrings(LArgs, ',') + '>';
+  Result := LStr.SubString(0, LStr.IndexOf('<') + 1) + MergeStrings(LArgs, ',');
+  if Result <> EmptyStr then
+    Result := Result + '>';
 end;
 
 function TRttiTypeHelper.GetIsInterface: Boolean;
@@ -2130,8 +2191,7 @@ begin
   Result := Assigned(AProperty);
 end;
 
-function TRttiTypeHelper.TryGetStandardConstructor(
-  out AMethod: TRttiMethod): Boolean;
+function TRttiTypeHelper.TryGetStandardConstructor(out AMethod: TRttiMethod): Boolean;
 begin
   AMethod := GetStandardConstructor();
   Result := Assigned(AMethod);
