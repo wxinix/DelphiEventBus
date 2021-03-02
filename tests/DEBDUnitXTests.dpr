@@ -86,7 +86,7 @@ end;
 {$ENDIF}
 
 begin
-  ReportMemoryLeaksOnShutdown := true;
+  ReportMemoryLeaksOnShutdown := True;
 {$IFDEF CONSOLE_TESTRUNNER}
   MainConsole();
 {$ENDIF}
