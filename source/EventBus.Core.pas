@@ -48,12 +48,12 @@ uses
 type
   {$REGION 'Type aliases to improve readability'}
   TSubscriptions = TObjectList<TSubscription>;
-  TCategory = string;
+  TCategory = String;
   TCategories = TList<TCategory>;
   TCategoryToSubscriptionsMap = TObjectDictionary<TCategory, TSubscriptions>;
   TSubscriberToCategoriesMap = TObjectDictionary<TObject, TCategories>;
 
-  TAttributeName = string;
+  TAttributeName = String;
   TCategoryToSubscriptionsByAttributeName = TObjectDictionary<TAttributeName, TCategoryToSubscriptionsMap>;
   TSubscriberToCategoriesByAttributeName = TObjectDictionary<TAttributeName, TSubscriberToCategoriesMap>;
   {$ENDREGION}
@@ -79,7 +79,7 @@ type
     /// <returns>
     ///   The subscriptions belonging to the category and matching the subscriber attribute.
     /// </returns>
-    function GetCreateSubscriptions<T: TSubscriberAttribute>(const ACategory: string): TSubscriptions;
+    function GetCreateSubscriptions<T: TSubscriberAttribute>(const ACategory: String): TSubscriptions;
 
     /// <summary>
     ///   Retrieves the categories associated with the subscriber object, while matching the specified
@@ -130,7 +130,7 @@ type
     /// <returns>
     ///   Returns True if retrieves successfully, False otherwise.
     /// </returns>
-    function TryGetSubscriptions<T: TSubscriberAttribute>(const ACategory: string; out ASubscriptions: TSubscriptions): Boolean;
+    function TryGetSubscriptions<T: TSubscriberAttribute>(const ACategory: String; out ASubscriptions: TSubscriptions): Boolean;
 
     /// <summary>
     ///   Checks if the specified subscriber object has been registered.
@@ -177,15 +177,15 @@ type
     function DoUnsubscribe<T: TSubscriberAttribute>(ASubscriber: TObject; const ACategory: TCategory): TSubscription;
 
     procedure InvokeSubscriber(ASubscription: TSubscription; const AParams: array of TValue);
-    procedure Post(ASubscription: TSubscription; const AMessage: string; AIsMainThread: Boolean); overload;
+    procedure Post(ASubscription: TSubscription; const AMessage: String; AIsMainThread: Boolean); overload;
     procedure Post(ASubscription: TSubscription; const AEvent: IInterface; AIsMainThread: Boolean); overload;
 
     {$REGION'IEventBus interface methods'}
     function IsRegisteredForChannels(ASubscriber: TObject): Boolean;
     function IsRegisteredForEvents(ASubscriber: TObject): Boolean;
-    procedure Post(const AChannel: string; const AMessage: string); overload;
-    procedure Post(const AEvent: IInterface; const AContext: string = ''); overload;
-    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: string);
+    procedure Post(const AChannel: String; const AMessage: String); overload;
+    procedure Post(const AEvent: IInterface; const AContext: String = ''); overload;
+    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: String);
     procedure RegisterSubscriberForChannels(ASubscriber: TObject);
     procedure SilentRegisterSubscriberForChannels(ASubscriber: TObject);
     procedure RegisterSubscriberForEvents(ASubscriber: TObject);
@@ -233,7 +233,7 @@ begin
   end;
 end;
 
-function TEventBus.GetCreateSubscriptions<T>(const ACategory: string): TSubscriptions;
+function TEventBus.GetCreateSubscriptions<T>(const ACategory: String): TSubscriptions;
 begin
   var LAttrName := T.ClassName;
   var LCatToSubsMap: TCategoryToSubscriptionsMap;
@@ -318,7 +318,7 @@ begin
   Result := IsRegistered<SubscribeAttribute>(ASubscriber);
 end;
 
-procedure TEventBus.Post(const AChannel, AMessage: string);
+procedure TEventBus.Post(const AChannel, AMessage: String);
 begin
   FMrewSync.BeginRead;
 
@@ -342,7 +342,7 @@ begin
   end;
 end;
 
-procedure TEventBus.Post(const AEvent: IInterface; const AContext: string = '');
+procedure TEventBus.Post(const AEvent: IInterface; const AContext: String = '');
 begin
   FMrewSync.BeginRead;
 
@@ -367,7 +367,7 @@ begin
   end;
 end;
 
-procedure TEventBus.Post(ASubscription: TSubscription; const AMessage: string; AIsMainThread: Boolean);
+procedure TEventBus.Post(ASubscription: TSubscription; const AMessage: String; AIsMainThread: Boolean);
 begin
   if not Assigned(ASubscription.Subscriber) then
     Exit;
@@ -435,7 +435,7 @@ begin
   end;
 end;
 
-procedure TEventBus.RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: string);
+procedure TEventBus.RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: String);
 begin
   FMrewSync.BeginWrite;
 
@@ -545,7 +545,7 @@ begin
   Result := Assigned(ACategories);
 end;
 
-function TEventBus.TryGetSubscriptions<T>(const ACategory: string; out ASubscriptions: TSubscriptions): Boolean;
+function TEventBus.TryGetSubscriptions<T>(const ACategory: String; out ASubscriptions: TSubscriptions): Boolean;
 begin
   var LAttrName := T.ClassName;
   var LCatToSubsMap: TCategoryToSubscriptionsMap;

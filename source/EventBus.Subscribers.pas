@@ -33,12 +33,12 @@ type
   /// </remarks>
   TSubscriberMethod = class sealed(TObject)
   strict private
-    FContext: string;
-    FEventType: string;
+    FContext: String;
+    FEventType: String;
     FMethod: TRttiMethod;
     FPriority: Integer;
     FThreadMode: TThreadMode;
-    function Get_Category: string;
+    function Get_Category: String;
   public
     /// <param name="ARttiMethod">
     ///   Rtti information about the subject method.
@@ -55,8 +55,8 @@ type
     /// <param name="APriority">
     ///   Dispatching priority of the method.
     /// </param>
-    constructor Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode;
-      const AContext: string = ''; APriority: Integer = 1);
+    constructor Create(ARttiMethod: TRttiMethod; const AEventType: String; AThreadMode: TThreadMode;
+      const AContext: String = ''; APriority: Integer = 1);
 
     /// <summary>
     ///   Encodes Context string and EventType string to a Category string,
@@ -66,7 +66,7 @@ type
     ///   Named-channel event is a special case of the general event, where the
     ///   channel name is the Context, and System.string is the event type.
     /// </remarks>
-    class function EncodeCategory(const AContext: string; const AEventType: string = 'System.string'): string;
+    class function EncodeCategory(const AContext: String; const AEventType: String = 'System.string'): String;
 
     /// <summary>
     ///   Checkes if two subscriber methods are equal. Returns true when
@@ -80,18 +80,18 @@ type
     /// <summary>
     ///   Category of the subscriber method. Internally it takes value of "Context:EventType".
     /// </summary>
-    property Category: string read Get_Category;
+    property Category: String read Get_Category;
 
     /// <summary>
     ///   Context of the subscriber method.
     /// </summary>
-    property Context: string read FContext;
+    property Context: String read FContext;
 
     /// <summary>
     ///   Event type of the subscriber method. It is actually the fully
     ///   qualified name of the event type.
     /// </summary>
-    property EventType: string read FEventType;
+    property EventType: String read FEventType;
 
     /// <summary>
     ///   Rtti information of the subscriber method.
@@ -124,7 +124,7 @@ type
     ///   object.
     /// </summary>
     procedure Set_Active(const AValue: Boolean);
-    function Get_Context: string;
+    function Get_Context: String;
     {$ENDREGION}
   public
     constructor Create(ASubscriber: TObject; ASubscriberMethod: TSubscriberMethod);
@@ -143,7 +143,7 @@ type
     /// <summary>
     ///   Context of the subscriber method.
     /// </summary>
-    property Context: string read Get_Context;
+    property Context: String read Get_Context;
     /// <summary>
     ///   The subscriber object.
     /// </summary>
@@ -190,8 +190,8 @@ implementation
 uses
   System.SysUtils, System.TypInfo, EventBus.Helpers;
 
-constructor TSubscriberMethod.Create(ARttiMethod: TRttiMethod; const AEventType: string; AThreadMode: TThreadMode;
-  const AContext: string = ''; APriority: Integer = 1);
+constructor TSubscriberMethod.Create(ARttiMethod: TRttiMethod; const AEventType: String; AThreadMode: TThreadMode;
+  const AContext: String = ''; APriority: Integer = 1);
 begin
   FMethod := ARttiMethod;
   FEventType := AEventType;
@@ -200,8 +200,8 @@ begin
   FPriority := APriority;
 end;
 
-class function TSubscriberMethod.EncodeCategory(const AContext: string;
-  const AEventType: string = 'System.string'): string;
+class function TSubscriberMethod.EncodeCategory(const AContext: String;
+  const AEventType: String = 'System.string'): String;
 begin
   Result := Format('%s:%s', [AContext, AEventType]);
 end;
@@ -218,7 +218,7 @@ begin
   Result := (LOther.Method.Tostring = Method.Tostring) and (LOther.EventType = EventType);
 end;
 
-function TSubscriberMethod.Get_Category: string;
+function TSubscriberMethod.Get_Category: String;
 begin
   Result := EncodeCategory(Context, EventType);
 end;
@@ -303,7 +303,7 @@ begin
   end;
 end;
 
-function TSubscription.Get_Context: string;
+function TSubscription.Get_Context: String;
 begin
   Result := SubscriberMethod.Context;
 end;

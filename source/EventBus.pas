@@ -74,7 +74,7 @@ type
     /// <param name="AMessage">
     ///   The message to be posted
     /// </param>
-    procedure Post(const AChannel: string; const AMessage: string); overload;
+    procedure Post(const AChannel: String; const AMessage: String); overload;
 
     /// <summary>
     ///   Posts an interface-typed event to the event bus.
@@ -86,7 +86,7 @@ type
     ///   Context of the event. It will be jointly used by the event bus
     ///   to route the event to proper subscriber methods.
     /// </param>
-    procedure Post(const AEvent: IInterface; const AContext: string = ''); overload;
+    procedure Post(const AEvent: IInterface; const AContext: String = ''); overload;
 
     /// <summary>
     ///   Registers a new subscriber for named-channel messages.
@@ -191,7 +191,7 @@ type
     ///   Throws when a null subscriber is specified, or there is no existing subscription that matches the
     ///   event type and old context.
     /// </exception>
-    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: string);
+    procedure RegisterNewContext(ASubscriber: TObject; AEvent: IInterface; const AOldContext, ANewContext: String);
   end;
 
 type
@@ -278,7 +278,7 @@ type
 type
   TSubscriberAttribute = class abstract (TCustomAttribute)
   strict private
-    FContext: string;
+    FContext: String;
     FThreadMode: TThreadMode;
   strict protected
     function Get_ArgTypeKind: TTypeKind; virtual; abstract;
@@ -290,7 +290,7 @@ type
     ///   Context of event.
     /// </param>
     /// <seealso cref="TEventBusThreadMode" />
-    constructor Create(AThreadMode: TThreadMode; const AContext: string);
+    constructor Create(AThreadMode: TThreadMode; const AContext: String);
   public
     /// <summary>
     ///   Thread mode of the subscriber method.
@@ -300,7 +300,7 @@ type
     /// <summary>
     ///   Context of the subscriber method.
     /// </summary>
-    property Context: string read FContext;
+    property Context: String read FContext;
 
     /// <summary>
     ///   Required argment type of the subscriber method.
@@ -316,7 +316,7 @@ type
   strict protected
     function Get_ArgTypeKind: TTypeKind; override;
   public
-    constructor Create(AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: string = '');
+    constructor Create(AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: UnicodeString = '');
   end;
 
   /// <summary>
@@ -325,7 +325,7 @@ type
   /// </summary>
   ChannelAttribute = class(TSubscriberAttribute)
   strict private
-    function Get_Channel: string;
+    function Get_Channel: String;
   strict protected
     function Get_ArgTypeKind: TTypeKind; override;
   public
@@ -335,12 +335,12 @@ type
     /// <param name="AThreadMode">
     ///   Thread mode of the subscriber method
     /// </param>
-    constructor Create(const AChannel: string; AThreadMode: TThreadMode = TThreadMode.Posting);
+    constructor Create(const AChannel: String; AThreadMode: TThreadMode = TThreadMode.Posting);
 
     /// <summary>
     ///   Name of the channel.
     /// </summary>
-    property Channel: string read Get_Channel;
+    property Channel: String read Get_Channel;
   end;
 
   /// <summary>
@@ -432,7 +432,7 @@ begin
   FOwnsData := AValue;
 end;
 
-constructor SubscribeAttribute.Create(AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: string = '');
+constructor SubscribeAttribute.Create(AThreadMode: TThreadMode = TThreadMode.Posting; const AContext: String = '');
 begin
   inherited Create(AThreadMode, AContext);
 end;
@@ -442,7 +442,7 @@ begin
   Result := TTypeKind.tkInterface;
 end;
 
-constructor ChannelAttribute.Create(const AChannel: string; AThreadMode: TThreadMode = TThreadMode.Posting);
+constructor ChannelAttribute.Create(const AChannel: String; AThreadMode: TThreadMode = TThreadMode.Posting);
 begin
   inherited Create(AThreadMode, AChannel);
 end;
@@ -452,12 +452,12 @@ begin
   Result := TTypeKind.tkUString;
 end;
 
-function ChannelAttribute.Get_Channel: string;
+function ChannelAttribute.Get_Channel: String;
 begin
   Result := Context;
 end;
 
-constructor TSubscriberAttribute.Create(AThreadMode: TThreadMode; const AContext: string);
+constructor TSubscriberAttribute.Create(AThreadMode: TThreadMode; const AContext: String);
 begin
   inherited Create;
   FContext := AContext;

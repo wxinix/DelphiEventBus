@@ -96,7 +96,7 @@ uses
 procedure TEventBusTest.TestSimplePost;
 var
   LEvent: IEventBusEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
   LEvent := TEventBusEvent.Create;
@@ -109,7 +109,7 @@ end;
 
 procedure TEventBusTest.TestSimplePostChannel;
 var
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForChannels(ChannelSubscriber);
   LMsg := 'TestSimplePost';
@@ -203,7 +203,7 @@ end;
 procedure TEventBusTest.TestRegisterUnregisterMultipleSubscriberChannels;
 var
   LChannelSubscriber: TChannelSubscriber;
-  LMsg: string;
+  LMsg: String;
 begin
   LChannelSubscriber := TChannelSubscriber.Create;
   try
@@ -224,7 +224,7 @@ procedure TEventBusTest.TestRegisterUnregisterMultipleSubscriberEvents;
 var
   LSubscriber: TSubscriberCopy;
   LEvent: IEventBusEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   LSubscriber := TSubscriberCopy.Create;
   try
@@ -245,7 +245,7 @@ end;
 
 procedure TEventBusTest.TestAsyncPostChannel;
 var
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForChannels(ChannelSubscriber);
   LMsg := 'TestAsyncPost';
@@ -259,7 +259,7 @@ end;
 procedure TEventBusTest.TestBackgroundPost;
 var
   LEvent: IBackgroundEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
   LEvent := TBackgroundEvent.Create;
@@ -274,7 +274,7 @@ end;
 
 procedure TEventBusTest.TestBackgroundPostChannel;
 var
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForChannels(ChannelSubscriber);
   LMsg := 'TestBackgroundPost';
@@ -288,7 +288,7 @@ end;
 procedure TEventBusTest.TestBackgroundsPost;
 var
   LEvent: IBackgroundEvent;
-  LMsg: string;
+  LMsg: String;
   I: Integer;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
@@ -308,7 +308,7 @@ end;
 
 procedure TEventBusTest.TestBackgroundsPostChannel;
 var
-  LMsg: string;
+  LMsg: String;
   I: Integer;
 begin
   GlobalEventBus.RegisterSubscriberForChannels(ChannelSubscriber);
@@ -351,7 +351,7 @@ end;
 
 procedure TEventBusTest.TestPostChannelOnMainThread;
 var
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForChannels(ChannelSubscriber);
   LMsg := 'TestPostOnMainThread';
@@ -363,7 +363,7 @@ end;
 procedure TEventBusTest.TestPostInvalidContextOnMainThread;
 var
   LEvent: IMainEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
   LEvent := TMainEvent.Create;
@@ -376,7 +376,7 @@ end;
 procedure TEventBusTest.TestPostContextOnMainThread;
 var
   LEvent: IMainEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
   LEvent := TMainEvent.Create;
@@ -466,7 +466,7 @@ end;
 procedure TEventBusTest.TestPostOnMainThread;
 var
   LEvent: IMainEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
   LEvent := TMainEvent.Create;
@@ -480,7 +480,7 @@ end;
 procedure TEventBusTest.TestAsyncPost;
 var
   LEvent: IAsyncEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
   LEvent := TAsyncEvent.Create;
@@ -606,7 +606,7 @@ end;
 procedure TEventBusTest.TestRegisterNewContext;
 var
   LEvent: IMainEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
   LEvent := TMainEvent.Create;
@@ -625,7 +625,7 @@ end;
 procedure TEventBusTest.TestRegisterNewContextWithInvalidOldContext;
 var
   LEvent: IMainEvent;
-  LMsg: string;
+  LMsg: String;
 begin
   GlobalEventBus.RegisterSubscriberForEvents(Subscriber);
   LEvent := TMainEvent.Create;

@@ -9,16 +9,16 @@ type
   TPerson = class(TObject)
   private
     FChild: TPerson;
-    FFirstname: string;
-    FLastname: string;
+    FFirstname: String;
+    FLastname: String;
     procedure Set_Child(const AValue: TPerson);
-    procedure Set_Firstname(const AValue: string);
-    procedure Set_Lastname(const AValue: string);
+    procedure Set_Firstname(const AValue: String);
+    procedure Set_Lastname(const AValue: String);
   public
     destructor Destroy; override;
     property Child: TPerson read FChild write Set_Child;
-    property Firstname: string read FFirstname write Set_Firstname;
-    property Lastname: string read FLastname write Set_Lastname;
+    property Firstname: String read FFirstname write Set_Firstname;
+    property Lastname: String read FLastname write Set_Lastname;
   end;
 
   IEventBusEvent = IDEBEvent<string>;
@@ -56,15 +56,15 @@ type
 
   TBaseSubscriber = class(TObject)
   private
-    FChannelMsg: string;
+    FChannelMsg: String;
     FEvent: TEvent; // Wrapper of Win32 Set_Event with automic Set_/Reset, no need for thread protection.
     FCount: Integer;
-    FEventMsg: string;
+    FEventMsg: String;
     FLastEvent: IEventBusEvent;
     FLastEventThreadID: Cardinal;
-    procedure Set_LastChannelMsg(const AValue: string);
+    procedure Set_LastChannelMsg(const AValue: String);
     procedure Set_LastEvent(const AValue: IEventBusEvent);
-    procedure Set_LastEventMsg(const AValue: string);
+    procedure Set_LastEventMsg(const AValue: String);
     procedure Set_LastEventThreadID(const AValue: Cardinal);
   public
     constructor Create;
@@ -75,8 +75,8 @@ type
     property Event: TEvent read FEvent; // Readonly is good enough
     property Count: Integer read FCount;
     property LastEvent: IEventBusEvent read FLastEvent write Set_LastEvent;
-    property LastChannelMsg: string read FChannelMsg write Set_LastChannelMsg;
-    property LastEventMsg: string read FEventMsg write Set_LastEventMsg;
+    property LastChannelMsg: String read FChannelMsg write Set_LastChannelMsg;
+    property LastEventMsg: String read FEventMsg write Set_LastEventMsg;
     property LastEventThreadID: Cardinal read FLastEventThreadID write Set_LastEventThreadID;
   end;
 
@@ -99,16 +99,16 @@ type
 
   TChannelSubscriber = class(TBaseSubscriber)
     [Channel('test_channel')]
-    procedure OnSimpleChannel(AMsg: string);
+    procedure OnSimpleChannel(AMsg: String);
 
     [Channel('test_channel_async', TThreadMode.Async)]
-    procedure OnSimpleAsyncChannel(AMsg: string);
+    procedure OnSimpleAsyncChannel(AMsg: String);
 
     [Channel('test_channel_main', TThreadMode.Main)]
-    procedure OnSimpleMainChannel(AMsg: string);
+    procedure OnSimpleMainChannel(AMsg: String);
 
     [Channel('test_channel_bkg', TThreadMode.Background)]
-    procedure OnSimpleBackgroundChannel(AMsg: string);
+    procedure OnSimpleBackgroundChannel(AMsg: String);
   end;
 
    TSubscriberCopy = class(TBaseSubscriber)
@@ -155,7 +155,7 @@ type
     procedure OnEvent(AEvent: IEventBusEvent; AExtraArg: Integer);
 
     [Channel('Test')]
-    procedure OnChannelMessage(const AMesage: string; AExtraArg: Integer);
+    procedure OnChannelMessage(const AMesage: String; AExtraArg: Integer);
   end;
 
   TInvalidArgTypeSubscriber = class
@@ -206,14 +206,14 @@ begin
   TMonitor.Exit(Self);
 end;
 
-procedure TBaseSubscriber.Set_LastChannelMsg(const AValue: string);
+procedure TBaseSubscriber.Set_LastChannelMsg(const AValue: String);
 begin
   TMonitor.Enter(Self);
   FChannelMsg := AValue;
   TMonitor.Exit(Self);
 end;
 
-procedure TBaseSubscriber.Set_LastEventMsg(const AValue: string);
+procedure TBaseSubscriber.Set_LastEventMsg(const AValue: String);
 begin
   TMonitor.Enter(Self);
   FEventMsg := AValue;
@@ -286,12 +286,12 @@ begin
   FChild := AValue;
 end;
 
-procedure TPerson.Set_Firstname(const AValue: string);
+procedure TPerson.Set_Firstname(const AValue: String);
 begin
   FFirstname := AValue;
 end;
 
-procedure TPerson.Set_Lastname(const AValue: string);
+procedure TPerson.Set_Lastname(const AValue: String);
 begin
   FLastname := AValue;
 end;
@@ -341,14 +341,14 @@ begin
   FPersonList := AValue;
 end;
 
-procedure TChannelSubscriber.OnSimpleAsyncChannel(AMsg: string);
+procedure TChannelSubscriber.OnSimpleAsyncChannel(AMsg: String);
 begin
   LastChannelMsg := AMsg;
   LastEventThreadID := TThread.CurrentThread.ThreadID;
   Event.SetEvent;
 end;
 
-procedure TChannelSubscriber.OnSimpleBackgroundChannel(AMsg: string);
+procedure TChannelSubscriber.OnSimpleBackgroundChannel(AMsg: String);
 begin
   LastChannelMsg := AMsg;
   IncrementCount;
@@ -356,21 +356,21 @@ begin
   Event.SetEvent;
 end;
 
-procedure TChannelSubscriber.OnSimpleChannel(AMsg: string);
+procedure TChannelSubscriber.OnSimpleChannel(AMsg: String);
 begin
   LastChannelMsg := AMsg;
   LastEventThreadID := TThread.CurrentThread.ThreadID;
   Event.SetEvent;
 end;
 
-procedure TChannelSubscriber.OnSimpleMainChannel(AMsg: string);
+procedure TChannelSubscriber.OnSimpleMainChannel(AMsg: String);
 begin
   LastChannelMsg := AMsg;
   LastEventThreadID := TThread.CurrentThread.ThreadID;
   Event.SetEvent;
 end;
 
-procedure TInvalidArgNumSubscriber.OnChannelMessage(const AMesage: string; AExtraArg: Integer);
+procedure TInvalidArgNumSubscriber.OnChannelMessage(const AMesage: String; AExtraArg: Integer);
 begin
   // No-Op
 end;

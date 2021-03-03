@@ -79,8 +79,8 @@ type
     ///   Finds an attribute from the list that is of the specified attribute type, and returns the index
     ///   of the attribute found.
     /// </summary>
-    class function FindAttribute<T: TCustomAttribute>(const AAttributes: TArray<TCustomAttribute>; var AAttribute: TCustomAttribute;
-      const AStartIndex: Integer = 0): Integer; overload;
+    class function FindAttribute<T: TCustomAttribute>(const AAttributes: TArray<TCustomAttribute>;
+      var AAttribute: TCustomAttribute; const AStartIndex: Integer = 0): Integer; overload;
 
     /// <summary>
     ///   Finds as many attributes from the list that are of the specified attribute type.
@@ -94,23 +94,23 @@ type
     ///   "#13Hello#10World" will be encoded as a string "#13'Hello'#10'World'", where whitespace #13
     ///   appears as a string '#13'. <br />
     /// </summary>
-    class function EncodeWhitespace(const AStr: string): string;
+    class function EncodeWhitespace(const AStr: String): String;
 
     /// <summary>
     ///   Joins the strings with the specified delimiter.
     /// </summary>
-    class function Join(const AValues: TArray<string>; const ADelimiter: string): string; overload;
+    class function Join(const AValues: TArray<string>; const ADelimiter: String): String; overload;
 
     /// <summary>
     ///   Pads the string if its length is smaller than the specified total length.
     /// </summary>
-    class function PadString(const AStr: string; const ATotalLength: Integer; const APadLeft: Boolean = True;
-      const APadChar: Char = ' '): string;
+    class function PadString(const AStr: String; const ATotalLength: Integer; const APadLeft: Boolean = True;
+      const APadChar: Char = ' '): String;
 
     /// <summary>
     ///   Splits the string using the specified delimiter.
     /// </summary>
-    class function SplitString(const AStr, ADelimiters: string): TArray<string>;
+    class function SplitString(const AStr, ADelimiters: String): TArray<string>;
   end;
 
   TListStringUtils = class
@@ -133,7 +133,7 @@ type
     ///	<param name="AName">
     ///	  Name of the field to find
     ///	</param>
-    function GetField(const AName: string): TRttiField;
+    function GetField(const AName: String): TRttiField;
 
     ///	<summary>
     ///	  Returns the member with the given name; <b>nil</b> if nothing is found.
@@ -141,7 +141,7 @@ type
     ///	<param name="AName">
     ///	  Name of the member to find
     ///	</param>
-    function GetMember(const AName: string): TRttiMember;
+    function GetMember(const AName: String): TRttiMember;
 
     ///	<summary>
     ///	  Returns a list of all methods of the object.
@@ -164,7 +164,7 @@ type
     ///	<param name="AName">
     ///	  Name of the method to find
     ///	</param>
-    function GetMethod(const AName: string): TRttiMethod; overload;
+    function GetMethod(const AName: String): TRttiMethod; overload;
 
     ///	<summary>
     ///	  Returns a list of all properties of the object.
@@ -178,7 +178,7 @@ type
     ///	<param name="AName">
     ///	  Name of the property to find
     ///	</param>
-    function GetProperty(const AName: string): TRttiProperty;
+    function GetProperty(const AName: String): TRttiProperty;
 
     ///	<summary>
     ///	  Returns the type of the object; nil if nothing is found.
@@ -191,17 +191,17 @@ type
     ///	<param name="AName">
     ///	  Name of the field to find
     ///	</param>
-    function HasField(const AName: string): Boolean;
+    function HasField(const AName: String): Boolean;
 
     ///	<summary>
     ///	  Returns if the object contains a method with the given name.
     ///	</summary>
-    function HasMethod(const AName: string): Boolean;
+    function HasMethod(const AName: String): Boolean;
 
     ///	<summary>
     ///	  Returns if the object contains a property with the given name.
     ///	</summary>
-    function HasProperty(const AName: string): Boolean;
+    function HasProperty(const AName: String): Boolean;
 
     ///	<summary>
     ///	  Retrieves the method with the given name and returns if this was
@@ -213,7 +213,7 @@ type
     ///	<param name="AField">
     ///	  Field that was found when Result is <b>True</b>
     ///	</param>
-    function TryGetField(const AName: string; out AField: TRttiField): Boolean;
+    function TryGetField(const AName: String; out AField: TRttiField): Boolean;
 
     ///	<param name="AName">
     ///	  Name of the member to find
@@ -221,7 +221,7 @@ type
     ///	<param name="AMember">
     ///	  Member that was found when Result is <b>True</b>
     ///	</param>
-    function TryGetMember(const AName: string; out AMember: TRttiMember): Boolean;
+    function TryGetMember(const AName: String; out AMember: TRttiMember): Boolean;
 
     ///	<summary>
     ///	  Retrieves the method with the given code address and returns if this
@@ -245,7 +245,7 @@ type
     ///	<param name="AMethod">
     ///	  Method that was found when Result is <b>True</b>
     ///	</param>
-    function TryGetMethod(const AName: string; out AMethod: TRttiMethod): Boolean; overload;
+    function TryGetMethod(const AName: String; out AMethod: TRttiMethod): Boolean; overload;
 
     ///	<summary>
     ///	  Retrieves the property with the given name and returns if this was
@@ -257,7 +257,7 @@ type
     ///	<param name="AProperty">
     ///	  Property that was found when Result is <b>True</b>
     ///	</param>
-    function TryGetProperty(const AName: string; out AProperty: TRttiProperty): Boolean;
+    function TryGetProperty(const AName: String; out AProperty: TRttiProperty): Boolean;
 
     ///	<summary>
     ///	  Retrieves the type of the object and returns if this was successful.
@@ -320,7 +320,7 @@ type
   private
     function GetParameterCount: Integer;
   public
-    function Format(const AArgs: array of TValue; ASkipSelf: Boolean = True): string;
+    function Format(const AArgs: array of TValue; ASkipSelf: Boolean = True): String;
     property ParameterCount: Integer read GetParameterCount;
   end;
 
@@ -400,7 +400,7 @@ type
     ///   Get the generic type definition of the type. Generic type parameters will be replaced as T, T0,
     ///   T1, etc.
     /// </summary>
-    function GetGenericTypeDefinition(const AIncludeUnitName: Boolean = True): string;
+    function GetGenericTypeDefinition(const AIncludeUnitName: Boolean = True): String;
 
     /// <summary>
     ///   Retrieves a class member (field, property or method) by the specified name. First searches
@@ -413,7 +413,7 @@ type
     /// <returns>
     ///   The member found. If not found, nil will be returned.
     /// </returns>
-    function GetMember(const AName: string): TRttiMember;
+    function GetMember(const AName: String): TRttiMember;
 
     ///	<summary>
     ///	  Returns the method at the given code address; <b>nil</b> if nothing
@@ -433,7 +433,7 @@ type
     /// <returns>
     ///   The property found. If not found, nil will be returned.
     /// </returns>
-    function GetProperty(const AName: string): TRttiProperty;
+    function GetProperty(const AName: String): TRttiProperty;
 
     /// <summary>
     ///   Get the declared parameter-less constructor of the current class. The first found will be
@@ -447,9 +447,9 @@ type
     function IsCovariantTo(AOtherClass: TClass): Boolean; overload;
     function IsCovariantTo(AOtherType: PTypeInfo): Boolean; overload;
     function IsGenericTypeDefinition: Boolean;
-    function IsGenericTypeOf(const ABaseTypeName: string): Boolean;
+    function IsGenericTypeOf(const ABaseTypeName: String): Boolean;
     function IsInheritedFrom(AOtherType: TRttiType): Boolean; overload;
-    function IsInheritedFrom(const AOtherTypeName: string): Boolean; overload;
+    function IsInheritedFrom(const AOtherTypeName: String): Boolean; overload;
     function MakeGenericType(const ATypeArguments: array of PTypeInfo): TRttiType;
 
     ///	<summary>
@@ -462,7 +462,7 @@ type
     ///	<param name="AField">
     ///	  Field that was found when Result is <b>True</b>
     ///	</param>
-    function TryGetField(const AName: string; out AField: TRttiField): Boolean;
+    function TryGetField(const AName: String; out AField: TRttiField): Boolean;
 
     ///	<summary>
     ///	  Retrieves the member with the given name and returns if this was
@@ -474,7 +474,7 @@ type
     ///	<param name="AMember">
     ///	  Member that was found when Result is <b>True</b>
     ///	</param>
-    function TryGetMember(const AName: string; out AMember: TRttiMember): Boolean;
+    function TryGetMember(const AName: String; out AMember: TRttiMember): Boolean;
 
     ///	<summary>
     ///	  Retrieves the method with the given code address and returns if this
@@ -498,7 +498,7 @@ type
     ///	<param name="AMethod">
     ///	  Method that was found when Result is <b>True</b>
     ///	</param>
-    function TryGetMethod(const AName: string; out AMethod: TRttiMethod): Boolean; overload;
+    function TryGetMethod(const AName: String; out AMethod: TRttiMethod): Boolean; overload;
 
     /// <summary>
     ///   Retrieves the parameter-less constructor by first searching the subject type then its parent
@@ -533,7 +533,7 @@ type
     ///	<param name="AProperty">
     ///	  Property that was found when Result is <b>True</b>
     ///	</param>
-    function TryGetProperty(const AName: string; out AProperty: TRttiProperty): Boolean;
+    function TryGetProperty(const AName: String; out AProperty: TRttiProperty): Boolean;
 
     /// <summary>
     ///   Retrieves the parameter-less constructor declared by the current class. The first one found will
@@ -579,8 +579,8 @@ type
     function ToObject: TObject;
     function ToVarRec: TVarRec;
 
-    class function ToString(const AValue: TValue): string; overload; static;
-    class function ToString(const AValues: array of TValue): string; overload; static;
+    class function ToString(const AValue: TValue): String; overload; static;
+    class function ToString(const AValues: array of TValue): String; overload; static;
     class function ToVarRecs(const AValues: array of TValue): TArray<TVarRec>; static;
     class function Equals(const Left, Right: TArray<TValue>): Boolean; overload; static;
     class function Equals<T>(const Left, Right: T): Boolean; overload; static;
@@ -589,7 +589,7 @@ type
     class function From(AValue: NativeInt; ATypeInfo: PTypeInfo): TValue; overload; static;
     class function From(AObject: TObject; AClass: TClass): TValue; overload; static;
     class function FromBoolean(const AValue: Boolean): TValue; static;
-    class function FromString(const AValue: string): TValue; static;
+    class function FromString(const AValue: String): TValue; static;
     class function FromVarRec(const AValue: TVarRec): TValue; static;
 
     function IsBoolean: Boolean;
@@ -659,10 +659,10 @@ type
     class constructor Create;
     class destructor Destroy;
 
-    constructor Create(AParent: PTypeInfo; const AName: string; APropertyType: PTypeInfo);
+    constructor Create(AParent: PTypeInfo; const AName: String; APropertyType: PTypeInfo);
 
-    class function FindByName(AParent: TRttiType; const APropertyName: string): TRttiPropertyExtension; overload;
-    class function FindByName(const AFullPropertyName: string): TRttiPropertyExtension; overload;
+    class function FindByName(AParent: TRttiType; const APropertyName: String): TRttiPropertyExtension; overload;
+    class function FindByName(const AFullPropertyName: String): TRttiPropertyExtension; overload;
 
     property Getter: TFunc<Pointer, TValue> read FGetter write FGetter;
     property Setter: TProc<Pointer, TValue> read FSetter write FSetter;
@@ -725,24 +725,24 @@ type
     /// <summary>
     ///   Obtains the name of the interface type.
     /// </summary>
-    class function GetTypeName(const AIntf: IInterface): string; overload; static;
+    class function GetTypeName(const AIntf: IInterface): String; overload; static;
 
     /// <summary>
     ///   Obtains the name of the interface type identified by a GUID.
     /// </summary>
-    class function GetTypeName(const AGuid: TGUID): string; overload; static;
+    class function GetTypeName(const AGuid: TGUID): String; overload; static;
 
     /// <summary>
     ///   Obtains the qualified name of the interface type. A qualified name
     ///   includes the unit name separated by dot.
     /// </summary>
-    class function GetQualifiedName(const AIntf: IInterface): string; overload; static;
+    class function GetQualifiedName(const AIntf: IInterface): String; overload; static;
 
     /// <summary>
     ///   Obtains the qualified name of the interface type identified by a
     ///   GUID. A qualified name includes the unit name separated by dot.
     /// </summary>
-    class function GetQualifiedName(const AGuid: TGUID): string; overload; static;
+    class function GetQualifiedName(const AGuid: TGUID): String; overload; static;
 
     /// <summary>
     ///   Obtains a list of RTTI objects for all the methods that are members of the specified
@@ -754,18 +754,18 @@ type
     ///   Returns an RTTI object for the interface method with the
     ///   specified name.
     /// </summary>
-    class function GetMethod(const AIntf: IInterface; const AMethodName: string): TRttiMethod; static;
+    class function GetMethod(const AIntf: IInterface; const AMethodName: String): TRttiMethod; static;
 
     /// <summary>
     ///   Performs a call to the described method.
     /// </summary>
-    class function InvokeMethod(const AIntf: IInterface; const AMethodName: string;
+    class function InvokeMethod(const AIntf: IInterface; const AMethodName: String;
       const Args: array of TValue): TValue; overload; static;
 
     /// <summary>
     ///   Performs a call to the described method.
     /// </summary>
-    class function InvokeMethod(const AIntfInTValue: TValue; const AMethodName: string;
+    class function InvokeMethod(const AIntfInTValue: TValue; const AMethodName: String;
       const Args: array of TValue): TValue; overload; static;
   end;
 
@@ -775,10 +775,10 @@ type
   /// </summary>
   EMethodNotFound = class(Exception)
   public
-    constructor Create(const AMethodName: string);
+    constructor Create(const AMethodName: String);
   end;
 
-function FindType(const AName: string; out AType: TRttiType): Boolean; overload;
+function FindType(const AName: String; out AType: TRttiType): Boolean; overload;
 function FindType(const AGuid: TGUID; out AType: TRttiType): Boolean; overload;
 function GetRttiType(AClass: TClass): TRttiType; overload;
 function GetRttiType(ATypeInfo: PTypeInfo): TRttiType; overload;
@@ -789,7 +789,7 @@ function TryGetRttiType(AClass: TClass; out AType: TRttiType): Boolean; overload
 function TryGetRttiType(ATypeInfo: PTypeInfo; out AType: TRttiType): Boolean; overload;
 function CompareValue(const Left, Right: TValue): Integer;
 function SameValue(const Left, Right: TValue): Boolean;
-function StripUnitName(const AName: string): string;
+function StripUnitName(const AName: String): String;
 function Supports(const AInstance: TValue; const IID: TGUID; out AIntf): Boolean; overload;
 
 var
@@ -813,8 +813,8 @@ begin
   Result := FindAttribute<T>(AAttributes) <> nil;
 end;
 
-class function TAttributeUtils.FindAttribute<T>(const AAttributes: TArray<TCustomAttribute>; var AAttribute: TCustomAttribute;
-  const AStartIndex: Integer = 0): Integer;
+class function TAttributeUtils.FindAttribute<T>(const AAttributes: TArray<TCustomAttribute>;
+  var AAttribute: TCustomAttribute; const AStartIndex: Integer = 0): Integer;
 begin
   Result := -1;
   AAttribute := nil;
@@ -849,7 +849,7 @@ begin
   end;
 end;
 
-class function TStrUtils.EncodeWhitespace(const AStr: string): string;
+class function TStrUtils.EncodeWhitespace(const AStr: String): String;
 const
   sDelimiter: array[Boolean] of string = (#39, ''); // #39 is single quote.
 begin
@@ -872,7 +872,7 @@ begin
   Result := Result + sDelimiter[LIsLastWhitespace];
 end;
 
-class function TStrUtils.Join(const AValues: TArray<string>; const ADelimiter: string): string;
+class function TStrUtils.Join(const AValues: TArray<string>; const ADelimiter: String): String;
 begin
   Result := '';
 
@@ -885,8 +885,8 @@ begin
   end;
 end;
 
-class function TStrUtils.PadString(const AStr: string; const ATotalLength: Integer; const APadLeft: Boolean = True;
-  const APadChar: Char = ' '): string;
+class function TStrUtils.PadString(const AStr: String; const ATotalLength: Integer; const APadLeft: Boolean = True;
+  const APadChar: Char = ' '): String;
 begin
   Result := AStr;
 
@@ -1427,7 +1427,7 @@ const
   );
 {$ENDREGION}
 
-function ExtractGenericArguments(ATypeInfo: PTypeInfo): string;
+function ExtractGenericArguments(ATypeInfo: PTypeInfo): String;
 begin
   var LStr := UTF8ToString(ATypeInfo.Name);
   var I := LStr.IndexOf('<');
@@ -1438,7 +1438,7 @@ begin
     Result := string.Empty;
 end;
 
-function FindType(const AName: string; out AType: TRttiType): Boolean;
+function FindType(const AName: String; out AType: TRttiType): Boolean;
 begin
   AType := Context.FindType(AName);
 
@@ -1499,7 +1499,7 @@ begin
   Result := Assigned(LType) and LType.IsCovariantTo(AOtherType);
 end;
 
-function MergeStrings(AValues: TStringDynArray; const ADelimiter: string): string;
+function MergeStrings(AValues: TStringDynArray; const ADelimiter: String): String;
 begin
   Result := '';
 
@@ -1524,7 +1524,7 @@ begin
   Result := Assigned(AType);
 end;
 
-function StripUnitName(const AName: string): string;
+function StripUnitName(const AName: String): String;
 begin
   Result := ReplaceText(AName, 'System.', '');
 end;
@@ -1563,52 +1563,60 @@ begin
         Result := System.Math.SameValue(Left.AsOrdinal, Right.AsDouble)
       else
         Result := System.Math.SameValue(Left.AsOrdinal, Right.AsExtended);
-    end else if Left.IsSingle then
-    begin
-      if Right.IsOrdinal then
-        Result := System.Math.SameValue(Left.AsSingle, Right.AsOrdinal)
-      else if Right.IsSingle then
-        Result := System.Math.SameValue(Left.AsSingle, Right.AsSingle)
-      else if Right.IsDouble then
-        Result := System.Math.SameValue(Left.AsSingle, Right.AsDouble)
-      else
-        Result := System.Math.SameValue(Left.AsSingle, Right.AsExtended);
-    end  else if Left.IsDouble then
-    begin
-      if Right.IsOrdinal then
-        Result := System.Math.SameValue(Left.AsDouble, Right.AsOrdinal)
-      else if Right.IsSingle then
-        Result := System.Math.SameValue(Left.AsDouble, Right.AsSingle)
-      else if Right.IsDouble then
-        Result := System.Math.SameValue(Left.AsDouble, Right.AsDouble)
-      else
-        Result := System.Math.SameValue(Left.AsDouble, Right.AsExtended);
     end else
     begin
-      if Right.IsOrdinal then
-        Result := System.Math.SameValue(Left.AsExtended, Right.AsOrdinal)
-      else if Right.IsSingle then
-        Result := System.Math.SameValue(Left.AsExtended, Right.AsSingle)
-      else if Right.IsDouble then
-        Result := System.Math.SameValue(Left.AsExtended, Right.AsDouble)
-      else
-        Result := System.Math.SameValue(Left.AsExtended, Right.AsExtended);
+      if Left.IsSingle then
+      begin
+        if Right.IsOrdinal then
+          Result := System.Math.SameValue(Left.AsSingle, Right.AsOrdinal)
+        else if Right.IsSingle then
+          Result := System.Math.SameValue(Left.AsSingle, Right.AsSingle)
+        else if Right.IsDouble then
+          Result := System.Math.SameValue(Left.AsSingle, Right.AsDouble)
+        else
+          Result := System.Math.SameValue(Left.AsSingle, Right.AsExtended);
+      end else
+      begin
+        if Left.IsDouble then
+        begin
+          if Right.IsOrdinal then
+            Result := System.Math.SameValue(Left.AsDouble, Right.AsOrdinal)
+          else if Right.IsSingle then
+            Result := System.Math.SameValue(Left.AsDouble, Right.AsSingle)
+          else if Right.IsDouble then
+            Result := System.Math.SameValue(Left.AsDouble, Right.AsDouble)
+          else
+            Result := System.Math.SameValue(Left.AsDouble, Right.AsExtended);
+        end else
+        begin
+          if Right.IsOrdinal then
+            Result := System.Math.SameValue(Left.AsExtended, Right.AsOrdinal)
+          else if Right.IsSingle then
+            Result := System.Math.SameValue(Left.AsExtended, Right.AsSingle)
+          else if Right.IsDouble then
+            Result := System.Math.SameValue(Left.AsExtended, Right.AsDouble)
+          else
+            Result := System.Math.SameValue(Left.AsExtended, Right.AsExtended);
+        end;
+      end;
     end;
-  end
-  else if Left.IsString and Right.IsString then
-    Result := Left.AsString = Right.AsString
-  else if Left.IsClass and Right.IsClass then
-    Result := Left.AsClass = Right.AsClass
-  else if Left.IsObject and Right.IsObject then
-    Result := Left.AsObject = Right.AsObject
-  else if Left.IsPointer and Right.IsPointer then
-    Result := Left.AsPointer = Right.AsPointer
-  else if Left.IsVariant and Right.IsVariant then
-    Result := Left.AsVariant = Right.AsVariant
-  else if Left.TypeInfo = Right.TypeInfo then
-    Result := Left.AsPointer = Right.AsPointer
-  else
-    Result := False;
+  end else
+  begin
+    if Left.IsString and Right.IsString then
+      Result := Left.AsString = Right.AsString
+    else if Left.IsClass and Right.IsClass then
+      Result := Left.AsClass = Right.AsClass
+    else if Left.IsObject and Right.IsObject then
+      Result := Left.AsObject = Right.AsObject
+    else if Left.IsPointer and Right.IsPointer then
+      Result := Left.AsPointer = Right.AsPointer
+    else if Left.IsVariant and Right.IsVariant then
+      Result := Left.AsVariant = Right.AsVariant
+    else if Left.TypeInfo = Right.TypeInfo then
+      Result := Left.AsPointer = Right.AsPointer
+    else
+      Result := False;
+  end;
 end;
 
 class function TArrayHelper.Concat<T>(const AArrays: array of TArray<T>): TArray<T>;
@@ -1638,7 +1646,7 @@ begin
   Result[1] := b;
 end;
 
-function TObjectHelper.GetField(const AName: string): TRttiField;
+function TObjectHelper.GetField(const AName: String): TRttiField;
 begin
   Result := nil;
   var LType: TRttiType;
@@ -1656,7 +1664,7 @@ begin
     Result := LType.GetFields;
 end;
 
-function TObjectHelper.GetMember(const AName: string): TRttiMember;
+function TObjectHelper.GetMember(const AName: String): TRttiMember;
 begin
   Result := nil;
   var LType: TRttiType;
@@ -1665,7 +1673,7 @@ begin
     Result := LType.GetMember(AName);
 end;
 
-function TObjectHelper.GetMethod(const AName: string): TRttiMethod;
+function TObjectHelper.GetMethod(const AName: String): TRttiMethod;
 begin
   Result := nil;
   var LType: TRttiType;
@@ -1701,7 +1709,7 @@ begin
     Result := LType.GetProperties();
 end;
 
-function TObjectHelper.GetProperty(const AName: string): TRttiProperty;
+function TObjectHelper.GetProperty(const AName: String): TRttiProperty;
 var
   LType: TRttiType;
 begin
@@ -1716,28 +1724,28 @@ begin
   TryGetType(Result);
 end;
 
-function TObjectHelper.HasField(const AName: string): Boolean;
+function TObjectHelper.HasField(const AName: String): Boolean;
 begin
   Result := GetField(AName) <> nil;
 end;
 
-function TObjectHelper.HasMethod(const AName: string): Boolean;
+function TObjectHelper.HasMethod(const AName: String): Boolean;
 begin
   Result := GetMethod(AName) <> nil;
 end;
 
-function TObjectHelper.HasProperty(const AName: string): Boolean;
+function TObjectHelper.HasProperty(const AName: String): Boolean;
 begin
   Result := GetProperty(AName) <> nil;
 end;
 
-function TObjectHelper.TryGetField(const AName: string; out AField: TRttiField): Boolean;
+function TObjectHelper.TryGetField(const AName: String; out AField: TRttiField): Boolean;
 begin
   AField := GetField(AName);
   Result := Assigned(AField);
 end;
 
-function TObjectHelper.TryGetMember(const AName: string; out AMember: TRttiMember): Boolean;
+function TObjectHelper.TryGetMember(const AName: String; out AMember: TRttiMember): Boolean;
 begin
   AMember := GetMember(AName);
   Result := Assigned(AMember);
@@ -1749,13 +1757,13 @@ begin
   Result := Assigned(AMethod);
 end;
 
-function TObjectHelper.TryGetMethod(const AName: string; out AMethod: TRttiMethod): Boolean;
+function TObjectHelper.TryGetMethod(const AName: String; out AMethod: TRttiMethod): Boolean;
 begin
   AMethod := GetMethod(AName);
   Result := Assigned(AMethod);
 end;
 
-function TObjectHelper.TryGetProperty(const AName: string; out AProperty: TRttiProperty): Boolean;
+function TObjectHelper.TryGetProperty(const AName: String; out AProperty: TRttiProperty): Boolean;
 begin
   AProperty := GetProperty(AName);
   Result := Assigned(AProperty);
@@ -1822,7 +1830,7 @@ begin
     Result := TRttiMethod(Self).ReturnType;
 end;
 
-function TRttiMethodHelper.Format(const AArgs: array of TValue; ASkipSelf: Boolean = True): string;
+function TRttiMethodHelper.Format(const AArgs: array of TValue; ASkipSelf: Boolean = True): String;
 begin
   Result := StripUnitName(Parent.Name) + '.' + Name + '(';
 
@@ -1961,7 +1969,7 @@ begin
     FindType(LArgs[I], Result[I]);
 end;
 
-function TRttiTypeHelper.GetGenericTypeDefinition(const AIncludeUnitName: Boolean = True): string;
+function TRttiTypeHelper.GetGenericTypeDefinition(const AIncludeUnitName: Boolean = True): String;
 begin
   var LArgs := SplitString(ExtractGenericArguments(Handle), ',');
 
@@ -1974,7 +1982,7 @@ begin
       LArgs[I] := 'T' + IntToStr(Succ(I));
   end;
 
-  var LStr: string;
+  var LStr: String;
   if IsPublicType and AIncludeUnitName then
     LStr := QualifiedName
   else
@@ -1990,7 +1998,7 @@ begin
   Result := Self is TRttiInterfaceType;
 end;
 
-function TRttiTypeHelper.GetMember(const AName: string): TRttiMember;
+function TRttiTypeHelper.GetMember(const AName: String): TRttiMember;
 var
   LProperty: TRttiProperty;
   LField: TRttiField;
@@ -2025,7 +2033,7 @@ begin
   Result := Length(GetMethods);
 end;
 
-function TRttiTypeHelper.GetProperty(const AName: string): TRttiProperty;
+function TRttiTypeHelper.GetProperty(const AName: String): TRttiProperty;
 begin
   Result := inherited GetProperty(AName);
 
@@ -2116,13 +2124,13 @@ begin
   end;
 end;
 
-function TRttiTypeHelper.IsGenericTypeOf(const ABaseTypeName: string): Boolean;
+function TRttiTypeHelper.IsGenericTypeOf(const ABaseTypeName: String): Boolean;
 begin
   var s := Name;
   Result := (s.SubString(0, Succ(ABaseTypeName.Length)) = (ABaseTypeName + '<')) and (s.SubString(s.Length-1, 1) = '>');
 end;
 
-function TRttiTypeHelper.IsInheritedFrom(const AOtherTypeName: string): Boolean;
+function TRttiTypeHelper.IsInheritedFrom(const AOtherTypeName: String): Boolean;
 begin
   Result := SameText(Name, AOtherTypeName) or (IsPublicType and SameText(QualifiedName, AOtherTypeName));
 
@@ -2209,7 +2217,7 @@ begin
   end;
 end;
 
-function TRttiTypeHelper.TryGetField(const AName: string; out AField: TRttiField): Boolean;
+function TRttiTypeHelper.TryGetField(const AName: String; out AField: TRttiField): Boolean;
 begin
   AField := GetField(AName);
   Result := Assigned(AField);
@@ -2221,20 +2229,20 @@ begin
   Result := Assigned(AMethod);
 end;
 
-function TRttiTypeHelper.TryGetMember(const AName: string; out AMember: TRttiMember): Boolean;
+function TRttiTypeHelper.TryGetMember(const AName: String; out AMember: TRttiMember): Boolean;
 begin
   AMember := GetMember(AName);
   Result := Assigned(AMember);
 end;
 
-function TRttiTypeHelper.TryGetMethod(const AName: string;
+function TRttiTypeHelper.TryGetMethod(const AName: String;
   out AMethod: TRttiMethod): Boolean;
 begin
   AMethod := GetMethod(AName);
   Result := Assigned(AMethod);
 end;
 
-function TRttiTypeHelper.TryGetProperty(const AName: string; out AProperty: TRttiProperty): Boolean;
+function TRttiTypeHelper.TryGetProperty(const AName: String; out AProperty: TRttiProperty): Boolean;
 begin
   AProperty := GetProperty(AName);
   Result := Assigned(AProperty);
@@ -2377,7 +2385,7 @@ begin
   end;
 end;
 
-class function TValueHelper.FromString(const AValue: string): TValue;
+class function TValueHelper.FromString(const AValue: String): TValue;
 begin
   Result := TValue.From<string>(AValue);
 end;
@@ -2551,7 +2559,7 @@ begin
     Result := AsObject;
 end;
 
-class function TValueHelper.ToString(const AValues: array of TValue): string;
+class function TValueHelper.ToString(const AValues: array of TValue): String;
 begin
   Result := '';
 
@@ -2624,7 +2632,7 @@ begin
     Result[I] := AValues[I].ToVarRec;
 end;
 
-class function TValueHelper.ToString(const AValue: TValue): string;
+class function TValueHelper.ToString(const AValue: TValue): String;
 begin
   case AValue.Kind of
     tkFloat:
@@ -2749,7 +2757,7 @@ begin
   FRegister.Free;
 end;
 
-constructor TRttiPropertyExtension.Create(AParent: PTypeInfo; const AName: string; APropertyType: PTypeInfo);
+constructor TRttiPropertyExtension.Create(AParent: PTypeInfo; const AName: String; APropertyType: PTypeInfo);
 begin
   inherited Create;
   FPropInfo.PropType := Pointer(NativeInt(APropertyType) - SizeOf(PTypeInfo));
@@ -2787,7 +2795,7 @@ begin
   DoSetValue(Instance, AValue);
 end;
 
-class function TRttiPropertyExtension.FindByName(AParent: TRttiType; const APropertyName: string): TRttiPropertyExtension;
+class function TRttiPropertyExtension.FindByName(AParent: TRttiType; const APropertyName: String): TRttiPropertyExtension;
 begin
   for var LPropertyExtension in FRegister.Values do
   begin
@@ -2804,7 +2812,7 @@ begin
     Result := nil
 end;
 
-class function TRttiPropertyExtension.FindByName(const AFullPropertyName: string): TRttiPropertyExtension;
+class function TRttiPropertyExtension.FindByName(const AFullPropertyName: String): TRttiPropertyExtension;
 begin
   Result := nil;
 
@@ -2873,7 +2881,7 @@ begin
   PVtable(LPatchedClass)[12] := @TRttiPropertyExtension.GetPropInfoStub;
 end;
 
-class function TStrUtils.SplitString(const AStr, ADelimiters: string): TArray<string>;
+class function TStrUtils.SplitString(const AStr, ADelimiters: String): TArray<string>;
 begin
   Result := nil;
 
@@ -2970,7 +2978,7 @@ begin
   FInterfaceTypes.DisposeOf;
 end;
 
-class function TInterfaceHelper.GetQualifiedName(const AIntf: IInterface): string;
+class function TInterfaceHelper.GetQualifiedName(const AIntf: IInterface): String;
 var
   LType: TRttiInterfaceType;
 begin
@@ -2982,7 +2990,7 @@ begin
     Result := EmptyStr;
 end;
 
-class function TInterfaceHelper.GetMethod(const AIntf: IInterface; const AMethodName: string): TRttiMethod;
+class function TInterfaceHelper.GetMethod(const AIntf: IInterface; const AMethodName: String): TRttiMethod;
 begin
   var LType: TRttiInterfaceType := GetType(AIntf);
 
@@ -3002,7 +3010,7 @@ begin
     Result := nil;
 end;
 
-class function TInterfaceHelper.GetQualifiedName(const AGuid: TGUID): string;
+class function TInterfaceHelper.GetQualifiedName(const AGuid: TGUID): String;
 begin
   var LType: TRttiInterfaceType := GetType(AGuid);
 
@@ -3018,7 +3026,7 @@ begin
   Result := FInterfaceTypes.Items[AGuid];
 end;
 
-class function TInterfaceHelper.GetTypeName(const AGuid: TGUID): string;
+class function TInterfaceHelper.GetTypeName(const AGuid: TGUID): String;
 begin
   var LType: TRttiInterfaceType := GetType(AGuid);
 
@@ -3028,7 +3036,7 @@ begin
     Result := EmptyStr;
 end;
 
-class function TInterfaceHelper.InvokeMethod(const AIntfInTValue: TValue; const AMethodName: string;
+class function TInterfaceHelper.InvokeMethod(const AIntfInTValue: TValue; const AMethodName: String;
   const Args: array of TValue): TValue;
 var
   LMethod: TRttiMethod;
@@ -3047,7 +3055,7 @@ begin
     raise EMethodNotFound.Create(AMethodName);
 end;
 
-class function TInterfaceHelper.InvokeMethod(const AIntf: IInterface; const AMethodName: string;
+class function TInterfaceHelper.InvokeMethod(const AIntf: IInterface; const AMethodName: String;
   const Args: array of TValue): TValue;
 begin
   var LMethod := GetMethod(AIntf, AMethodName);
@@ -3058,7 +3066,7 @@ begin
   Result := LMethod.Invoke(AIntf as TObject, Args);
 end;
 
-class function TInterfaceHelper.GetTypeName(const AIntf: IInterface): string;
+class function TInterfaceHelper.GetTypeName(const AIntf: IInterface): String;
 begin
   var LType: TRttiInterfaceType := GetType(AIntf);
 
@@ -3131,7 +3139,7 @@ begin
     Result := nil;
 end;
 
-constructor EMethodNotFound.Create(const AMethodName: string);
+constructor EMethodNotFound.Create(const AMethodName: String);
 begin
   inherited CreateFmt('Method %s not found.', [AMethodName]);
 end;
